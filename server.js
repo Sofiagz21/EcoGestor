@@ -10,7 +10,7 @@ const { createProxyMiddleware } = require("http-proxy-middleware");
 const dev = process.env.NODE_ENV !== 'production'
 const hostname = 'localhost'
 const port = 3000
-const target = 'http://www.ecogestor.somee.com/api';
+const target = 'https://localhost:44319/api/';
 const app = next({ dev })
 const handle = app.getRequestHandler()
 

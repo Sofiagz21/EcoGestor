@@ -1,5 +1,5 @@
 interface RolUsuario{
-    IdRolUsuario: string
+    idRolUsuario: number
     nombreRolUsuario:string
 
 }

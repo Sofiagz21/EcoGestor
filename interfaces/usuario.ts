@@ -1,13 +1,15 @@
 interface Usuario{
-    idUsuario: number;
-    idRolUsuario: number;
     nombresUsuario: string;
     apellidosUsuario: string;
-    emailUsuario: string;
     username?: string;
-    password?: string;
-    isNotDeleted?: boolean;
-    
-    rolUsuario? : UserType;
+    emailUsuario: string;
+    password: string;
+}
 
+
+interface UsuarioResponse extends Omit<Usuario, 'password'> {
+    idRolUsuario: number;
+    idUsuario: number;
+    rolUsuario?: RolUsuario;
+    password?: string;
 }

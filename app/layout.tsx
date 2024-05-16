@@ -29,7 +29,7 @@ export default function RootLayout({
             theme={{
               token: {
                 // Seed Token
-                fontFamily: "Nunito",
+                fontFamily: "inherit",
 
                 borderRadius: 8,
 

@@ -25,7 +25,7 @@ export function middleware(request: NextRequest) {
     ) {
         request.cookies.delete("usuario");
         const response = NextResponse.redirect(new URL("/login", request.nextUrl.origin));
-        response.cookies.delete("ussuario");
+        response.cookies.delete("usuario");
 
         return response;
     }
