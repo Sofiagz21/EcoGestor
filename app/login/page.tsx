@@ -3,11 +3,10 @@
 import { useAuth } from "@/hooks/useAuth";
 import type { FormProps } from "antd";
 import Image from "next/image";
-import { Button, Form, Input, Radio, Select, Space, Tabs } from "antd";
+import { Button, Form, Input, Radio, Space } from "antd";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
-import { useMediaQuery } from "react-responsive";
 
 // Antd icons
 import { FilePdfOutlined } from "@ant-design/icons";
@@ -31,18 +30,10 @@ export default function Page() {
       const data = await axiosInstance.get("/api/RolUsuario");
       setRolesUsuario(data.data);
       console.log("Roles de usuario:", data);
-      // Establece el primer Rol Usuario como predeterminado
-      //if (data.length > 0) {
-        //setRolUsuario(data[0]);
-      //}
     } catch (error) {
       console.error("Error al obtener los roles de usuario:", error);
-      // Manejo de errores: puedes mostrar un mensaje de error al usuario o realizar acciones específicas según el error
-      // Por ejemplo:
-      // setError("Se produjo un error al cargar los roles de usuario. Por favor, inténtelo de nuevo más tarde.");
     }
   };
-  
 
   //== Form functions ==//
 
@@ -156,208 +147,220 @@ export default function Page() {
 
   return (
     <div className="w-screen h-full lg:h-screen flex flex-col lg:flex-row justify-center lg:items-center overflow-hidden">
-      <div className="lg:absolute lg:top-0 lg:left-5  flex justify-center lg:justify-start">
-        <Image
-          src="/img/LogoEcogestor.svg"
-          alt="Logo"
-          width={200}
-          height={200}
-        />
+      <div className="lg:absolute lg:top-0 lg:left-5 flex flex-col justify-center items-start gap-6">
+        <div>
+          <Image
+            src="/img/LogoEcogestor.svg"
+            alt="Logo"
+            width={150}
+            height={150}
+    
+          />
+        </div>
       </div>
 
-      <div className="w-full lg:w-4/5 h-full flex flex-col justify-center items-center gap-6 px-9 py-4 lg:p-16">
-        <Tabs
-          className="w-full"
-          defaultActiveKey="Iniciar sesión"
-          activeKey={operation}
-          onChange={(activeKey: string) =>
-            setOperation(activeKey as "Iniciar sesión" | "Registrarse")
-          }
-        >
-          <Tabs.TabPane tab="Iniciar sesión" key="Iniciar sesión">
-            <Form
-              name="loginForm"
-              layout="vertical"
-              size="large"
-              onFinish={onFinishLogin}
-              onFinishFailed={onFinishLoginFailed}
-              className="w-full"
+      <div className="w-full lg:w-4/5 h-full flex flex-col justify-center  gap-6 px-9 py-4 lg:p-16">
+        <div className="ml-4 mb-8 text-left">
+          <h2
+            className={
+              operation === "Iniciar sesión"
+                ? "text-gray-500 font-semibold text-3xl"
+                : "text-gray-500 font-semibold text-3xl"
+            }
+          >
+            {operation}
+          </h2>
+        </div>
+
+        {operation === "Iniciar sesión" ? (
+          <Form
+            name="loginForm"
+            layout="vertical"
+            size="large"
+            onFinish={onFinishLogin}
+            onFinishFailed={onFinishLoginFailed}
+            className="w-full"
+          >
+            <Form.Item
+              label="Usuario o correo electrónico"
+              name="username"
+              rules={[
+                {
+                  required: true,
+                  message: "Por favor, ingresa tu usuario o correo",
+                },
+              ]}
             >
+              <Input />
+            </Form.Item>
+
+            <Form.Item
+              label="Contraseña"
+              name="password"
+              rules={[
+                {
+                  required: true,
+                  message: "Por favor, ingresa tu contraseña",
+                },
+              ]}
+            >
+              <Input.Password />
+            </Form.Item>
+
+            <Form.Item>
+              <Button className="w-full mt-5" type="primary" htmlType="submit">
+                Iniciar sesión
+              </Button>
+            </Form.Item>
+            {/* Mensaje de navegación entre iniciar sesión y registrarse */}
+            <div className="flex justify-between w-full text-gray-500 mt-9">
+              <p>¿Aún no tienes una cuenta?</p>
+              <a
+                className="text-green-500 hover:text-green-700 cursor-pointer"
+                onClick={() => setOperation("Registrarse")}
+              >
+                Registrarme
+              </a>
+            </div>
+          </Form>
+        ) : (
+          <Form
+            name="registerForm"
+            layout="vertical"
+            size="middle"
+            onFinish={onFinishRegister}
+            onFinishFailed={onFinishRegisterFailed}
+            className="w-full"
+          >
+            <Form.Item name="rolUsuario" style={{ marginBottom: "2rem" }}>
+              <Radio.Group
+                optionType="button"
+                buttonStyle="solid"
+                onChange={(e) =>
+                  setRolUsuario(
+                    rolesUsuario.find(
+                      (role) => role.nombreRolUsuario === e.target.value
+                    ) || rolesUsuario[0]
+                  )
+                }
+              >
+                {rolesUsuario.map((rolUsuario) => (
+                  <Radio.Button
+                    key={rolUsuario.idRolUsuario}
+                    value={rolUsuario.nombreRolUsuario}
+                  >
+                    {rolUsuario.nombreRolUsuario === "Jugador" ? (
+                      <Space>
+                        <FilePdfOutlined />
+                        Jugador
+                      </Space>
+                    ) : rolUsuario.nombreRolUsuario === "Admin" ? (
+                      <Space>
+                        <FilePdfOutlined />
+                        Administrador
+                      </Space>
+                    ) : null}
+                  </Radio.Button>
+                ))}
+              </Radio.Group>
+            </Form.Item>
+
+            <div className="md:flex w-full gap-5">
               <Form.Item
-                label="Usuario o correo electrónico"
+                className="md:w-1/2"
+                label="Nombres"
+                name="nombresUsuario"
+                rules={[
+                  {
+                    required: true,
+                    message: "Por favor, ingresa tu nombre",
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+
+              <Form.Item
+                className="md:w-1/2"
+                label="Apellidos"
+                name="apellidosUsuario"
+                rules={[
+                  {
+                    required: true,
+                    message: "Por favor, ingresa tu apellido",
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </div>
+
+            {rolUsuario.nombreRolUsuario === "Jugador" && (
+              <Form.Item
+                label="Nombre de usuario"
                 name="username"
                 rules={[
                   {
                     required: true,
-                    message: "Por favor, ingresa tu usuario o correo",
+                    message: "Por favor, ingresa tu nombre de usuario",
                   },
                 ]}
               >
                 <Input />
               </Form.Item>
+            )}
 
-              <Form.Item
-                label="Contraseña"
-                name="password"
-                rules={[
-                  {
-                    required: true,
-                    message: "Por favor, ingresa tu contraseña",
-                  },
-                ]}
-              >
-                <Input.Password />
-              </Form.Item>
-
-              <Form.Item>
-                <Button
-                  className="w-full mt-5"
-                  type="primary"
-                  htmlType="submit"
-                >
-                  Iniciar sesión
-                </Button>
-              </Form.Item>
-            </Form>
-          </Tabs.TabPane>
-          <Tabs.TabPane tab="Registrarse" key="Registrarse">
-            <Form
-              name="registerForm"
-              layout="vertical"
-              size="middle"
-              onFinish={onFinishRegister}
-              onFinishFailed={onFinishRegisterFailed}
-              className="w-full"
+            <Form.Item
+              label="Correo electrónico"
+              name="emailUsuario"
+              rules={[
+                {
+                  required: true,
+                  message: "Por favor, ingresa tu correo",
+                },
+                { type: "email", message: "Ingresa un correo válido" },
+              ]}
             >
-              <Form.Item
-                label="Tipo de usuario"
-                name="rolUsuario"
-                rules={[
-                  {
-                    required: true,
-                    message: "Por favor, selecciona un tipo de usuario",
-                  },
-                ]}
+              <Input />
+            </Form.Item>
+
+            <Form.Item
+              label="Contraseña"
+              name="password"
+              rules={[
+                {
+                  required: true,
+                  message: "Por favor, ingresa tu contraseña",
+                },
+              ]}
+            >
+              <Input.Password />
+            </Form.Item>
+
+            <Form.Item className="mt-5">
+              <Button
+                className="w-full mt-9 bg-green-500 hover:bg-green-700 text-white py-2 px-4 rounded"
+                type="primary"
+                htmlType="submit"
               >
-                <Radio.Group
-                  optionType="button"
-                  buttonStyle="solid"
-                  onChange={(e) =>
-                    setRolUsuario(
-                      rolesUsuario.find(
-                        (role) => role.nombreRolUsuario === e.target.value
-                      ) || rolesUsuario[0]
-                    )
-                  }
-                >
-                  {rolesUsuario.map((rolUsuario) => (
-                    <Radio.Button
-                      key={rolUsuario.idRolUsuario}
-                      value={rolUsuario.nombreRolUsuario}
-                    >
-                      {rolUsuario.nombreRolUsuario === "Jugador" ? (
-                        <Space>
-                          <FilePdfOutlined />
-                          Jugador
-                        </Space>
-                      ) : rolUsuario.nombreRolUsuario === "Admin" ? (
-                        <Space>
-                          <FilePdfOutlined />
-                          Administrador
-                        </Space>
-                      ) : null}
-                    </Radio.Button>
-                  ))}
-                </Radio.Group>
-              </Form.Item>
-
-              <div className="md:flex w-full gap-5">
-                <Form.Item
-                  className="md:w-1/2"
-                  label="Nombres"
-                  name="nombresUsuario"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Por favor, ingresa tu nombre",
-                    },
-                  ]}
-                >
-                  <Input />
-                </Form.Item>
-
-                <Form.Item
-                  className="md:w-1/2"
-                  label="Apellidos"
-                  name="apellidosUsuario"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Por favor, ingresa tu apellido",
-                    },
-                  ]}
-                >
-                  <Input />
-                </Form.Item>
-              </div>
-
-              {rolUsuario.nombreRolUsuario === "Jugador" && (
-                <Form.Item
-                  label="Nombre de usuario"
-                  name="username"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Por favor, ingresa tu nombre de usuario",
-                    },
-                  ]}
-                >
-                  <Input />
-                </Form.Item>
-              )}
-
-              <Form.Item
-                label="Correo electrónico"
-                name="emailUsuario"
-                rules={[
-                  {
-                    required: true,
-                    message: "Por favor, ingresa tu correo",
-                  },
-                  { type: "email", message: "Ingresa un correo válido" },
-                ]}
+                Registrarse
+              </Button>
+            </Form.Item>
+            {/* Mensaje de navegación entre iniciar sesión y registrarse */}
+            <div className="flex justify-between w-full text-gray-500 mt-9">
+              <p>¿Ya tienes una cuenta?</p>
+              <a
+                className="text-green-500 hover:text-green-700 cursor-pointer"
+                onClick={() => setOperation("Iniciar sesión")}
               >
-                <Input />
-              </Form.Item>
-
-              <Form.Item
-                label="Contraseña"
-                name="password"
-                rules={[
-                  {
-                    required: true,
-                    message: "Por favor, ingresa tu contraseña",
-                  },
-                ]}
-              >
-                <Input.Password />
-              </Form.Item>
-
-              <Form.Item>
-                <Button
-                  className="w-full mt-5"
-                  type="primary"
-                  htmlType="submit"
-                >
-                  Registrarse
-                </Button>
-              </Form.Item>
-            </Form>
-          </Tabs.TabPane>
-        </Tabs>
+                Iniciar sesión
+              </a>
+            </div>
+          </Form>
+        )}
       </div>
       <div
-        className="w-full lg:w-4/5 h-full px-8 py-12 lg:p-16 flex flex-col justify-center gap-3"
+        className="hidden lg:flex w-full lg:w-4/5 h-full px-8 py-12 lg:p-16 flex flex-col justify-center gap-3"
         style={{
           backgroundImage: isSmallScreen ? "none" : `url('${backgroundImage}')`,
           backgroundSize: "cover",
