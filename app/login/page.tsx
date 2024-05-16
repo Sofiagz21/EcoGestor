@@ -7,7 +7,7 @@ import { Button, Form, Input, Radio, Select, Space, Tabs } from "antd";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
-import { useMediaQuery } from 'react-responsive'
+import { useMediaQuery } from "react-responsive";
 
 // Antd icons
 import { FilePdfOutlined } from "@ant-design/icons";
@@ -24,21 +24,25 @@ export default function Page() {
     nombreRolUsuario: "",
   });
 
-  const auth = useAuth();
   const axiosInstance = axios.create();
 
   const getRolesUsuario = async () => {
     try {
-      const { data }: { data: RolUsuario[] } = await axiosInstance.get(
-        "/api/RolUsuario"
-      );
-      setRolesUsuario(data);
-      // Set default Rol Usuario as the first one
-      setRolUsuario(data[0]);
+      const data = await axiosInstance.get("/api/RolUsuario");
+      setRolesUsuario(data.data);
+      console.log("Roles de usuario:", data);
+      // Establece el primer Rol Usuario como predeterminado
+      //if (data.length > 0) {
+        //setRolUsuario(data[0]);
+      //}
     } catch (error) {
-      console.log("Failed:", error);
+      console.error("Error al obtener los roles de usuario:", error);
+      // Manejo de errores: puedes mostrar un mensaje de error al usuario o realizar acciones específicas según el error
+      // Por ejemplo:
+      // setError("Se produjo un error al cargar los roles de usuario. Por favor, inténtelo de nuevo más tarde.");
     }
   };
+  
 
   //== Form functions ==//
 
@@ -139,7 +143,8 @@ export default function Page() {
   }, [rolUsuario]);
 
   const [backgroundImage, setBackgroundImage] = useState("img/SignIn.png");
-  const isSmallScreen = useMediaQuery({ query: '(max-width: 768px)' })
+  const isClient = typeof window !== "undefined";
+  const isSmallScreen = isClient && window.innerWidth < 768;
 
   useEffect(() => {
     if (operation === "Iniciar sesión") {
@@ -165,7 +170,9 @@ export default function Page() {
           className="w-full"
           defaultActiveKey="Iniciar sesión"
           activeKey={operation}
-          onChange={(activeKey: string) => setOperation(activeKey as "Iniciar sesión" | "Registrarse")}
+          onChange={(activeKey: string) =>
+            setOperation(activeKey as "Iniciar sesión" | "Registrarse")
+          }
         >
           <Tabs.TabPane tab="Iniciar sesión" key="Iniciar sesión">
             <Form
@@ -224,7 +231,7 @@ export default function Page() {
             >
               <Form.Item
                 label="Tipo de usuario"
-                name="role"
+                name="rolUsuario"
                 rules={[
                   {
                     required: true,
@@ -235,10 +242,19 @@ export default function Page() {
                 <Radio.Group
                   optionType="button"
                   buttonStyle="solid"
-                  onChange={(e) => setRolUsuario(rolesUsuario.find(role => role.nombreRolUsuario === e.target.value) || rolesUsuario[0])}
+                  onChange={(e) =>
+                    setRolUsuario(
+                      rolesUsuario.find(
+                        (role) => role.nombreRolUsuario === e.target.value
+                      ) || rolesUsuario[0]
+                    )
+                  }
                 >
                   {rolesUsuario.map((rolUsuario) => (
-                    <Radio.Button key={rolUsuario.idRolUsuario} value={rolUsuario.nombreRolUsuario}>
+                    <Radio.Button
+                      key={rolUsuario.idRolUsuario}
+                      value={rolUsuario.nombreRolUsuario}
+                    >
                       {rolUsuario.nombreRolUsuario === "Jugador" ? (
                         <Space>
                           <FilePdfOutlined />
@@ -284,7 +300,7 @@ export default function Page() {
                   <Input />
                 </Form.Item>
               </div>
-              
+
               {rolUsuario.nombreRolUsuario === "Jugador" && (
                 <Form.Item
                   label="Nombre de usuario"
@@ -352,5 +368,3 @@ export default function Page() {
     </div>
   );
 }
-
-

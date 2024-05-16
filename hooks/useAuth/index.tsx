@@ -44,7 +44,7 @@ export function useAuth() {
                         .then((data) => {
                             console.log('/401 error > logout');
                             dispatch({ type: 'LOGOUT' });
-                            window.localStorage.removeItem('user');
+                            window.localStorage.removeItem('usuario');
                             router.push('/login');
                         })
                         .catch((err) => {
