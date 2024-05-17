@@ -1,6 +1,5 @@
 "use client";
 
-import { useAuth } from "@/hooks/useAuth";
 import type { FormProps } from "antd";
 import Image from "next/image";
 import { Alert, Button, Form, Input, Radio, Space, Spin } from "antd";
@@ -14,7 +13,7 @@ import { GiFarmer } from "react-icons/gi";
 import { LuBanana } from "react-icons/lu";
 import { LoadingOutlined } from "@ant-design/icons";
 
-export default function Page() {
+export default function LoginPage() {
   //Roles usuario
   const [rolesUsuario, setRolesUsuario] = useState<RolUsuario[]>([]);
   const [operation, setOperation] = useState<"Iniciar sesión" | "Registrarse">(
@@ -59,7 +58,7 @@ export default function Page() {
     setRegisterButtonLoading(true);
     const form: FormData = new FormData();
     if (values?.username.includes("@")) {
-      form.append("EmaiUsuario", values.username);
+      form.append("EmailUsuario", values.username);
     } else {
       form.append("Username", values.username);
     }
@@ -71,7 +70,7 @@ export default function Page() {
       // Set cookies
       if (data.status === 200) {
         Cookies.set("token", data.data.token);
-        Cookies.set("user", JSON.stringify(data.data));
+        Cookies.set("usuario", JSON.stringify(data.data));
         setLoginButtonLoading(false);
         setRegisterButtonLoading(false);
 
