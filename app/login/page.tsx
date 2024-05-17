@@ -3,13 +3,16 @@
 import { useAuth } from "@/hooks/useAuth";
 import type { FormProps } from "antd";
 import Image from "next/image";
-import { Button, Form, Input, Radio, Space } from "antd";
+import { Alert, Button, Form, Input, Radio, Space, Spin } from "antd";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
 
 // Antd icons
-import { FilePdfOutlined } from "@ant-design/icons";
+import { UserOutlined, UserSwitchOutlined } from "@ant-design/icons";
+import { GiFarmer } from "react-icons/gi";
+import { LuBanana } from "react-icons/lu";
+import { LoadingOutlined } from "@ant-design/icons";
 
 export default function Page() {
   //Roles usuario
@@ -22,6 +25,19 @@ export default function Page() {
     idRolUsuario: 1,
     nombreRolUsuario: "",
   });
+
+  // Loading button states
+  const [loginButtonLoading, setLoginButtonLoading] = useState<boolean>(false);
+  const [registerButtonLoading, setRegisterButtonLoading] =
+    useState<boolean>(false);
+
+  // Error states
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [registerError, setRegisterError] = useState<string | null>(null);
+  // Visibility
+  const [loginErrorVisible, setLoginErrorVisible] = useState<boolean>(false);
+  const [registerErrorVisible, setRegisterErrorVisible] =
+    useState<boolean>(false);
 
   const axiosInstance = axios.create();
 
@@ -37,44 +53,53 @@ export default function Page() {
 
   //== Form functions ==//
 
+  // Authenticate (for both login and after register)
   const authenticate = async (values: AuthRequest) => {
+    setLoginButtonLoading(true);
+    setRegisterButtonLoading(true);
+    const form: FormData = new FormData();
+    if (values?.username.includes("@")) {
+      form.append("EmaiUsuario", values.username);
+    } else {
+      form.append("Username", values.username);
+    }
+
+    form.append("Password", values.password);
+
     try {
-      const form: FormData = new FormData();
-      if (values?.username.includes("@")) {
-        form.append("EmailUsuario", values.username);
-      } else {
-        form.append("UserName", values.username);
-      }
-
-      form.append("Password", values.password);
-
-      const { data }: { data: AuthResponse } = await axiosInstance.post(
-        "/api/Auth/Login",
-        form
-      );
-
-      console.log("Success:", data);
-
+      const data = await axiosInstance.post("/api/Auth/Login", form);
       // Set cookies
-      Cookies.set("token", data.token);
-      Cookies.set("usuario", JSON.stringify(data));
+      if (data.status === 200) {
+        Cookies.set("token", data.data.token);
+        Cookies.set("user", JSON.stringify(data.data));
+        setLoginButtonLoading(false);
+        setRegisterButtonLoading(false);
 
-      window.location.href = "/dashboard";
-    } catch (error) {
-      console.log("Failed:", error);
+        setLoginErrorVisible(false);
+        setRegisterErrorVisible(false);
+
+        window.location.href = "/dashboard";
+      }
+    } catch (error: any) {
+      const data = error.response;
+      console.log("Error:", data.status);
+      setLoginErrorVisible(true);
+      setLoginError(
+        data.status === 400
+          ? "Error al iniciar sesión: Usuario o contraseña incorrectos."
+          : "Error al iniciar sesión. Inténtalo de nuevo más tarde."
+      );
+      setLoginButtonLoading(false);
+      setRegisterButtonLoading(false);
     }
   };
 
   // Login function
   const onFinishLogin: FormProps<AuthRequest>["onFinish"] = async (values) => {
-    try {
-      authenticate({
-        username: values.username,
-        password: values.password,
-      });
-    } catch (error) {
-      console.log("Failed:", error);
-    }
+    authenticate({
+      username: values.username,
+      password: values.password,
+    });
   };
 
   const onFinishLoginFailed: FormProps<AuthRequest>["onFinishFailed"] = (
@@ -83,35 +108,43 @@ export default function Page() {
     console.log("Failed:", errorInfo);
   };
 
-  //Registers function
-
+  // Register function
   const onFinishRegister: FormProps<Usuario>["onFinish"] = async (values) => {
+    setRegisterButtonLoading(true);
+
+    // Create form data
+    const form: FormData = new FormData();
+    form.append("NombresUsuario", values.nombresUsuario);
+    form.append("ApellidosUsuario", values.apellidosUsuario);
+    form.append("EmailUsuario", values.emailUsuario);
+    form.append("Password", values.password);
+    form.append("IdRolUsuario", rolUsuario.idRolUsuario.toString());
+    if (values.username) form.append("Username", values.username);
+
     try {
-      console.log("Register values:", values, rolUsuario);
-
-      // Create form data
-      const form: FormData = new FormData();
-      form.append("NombresUsuario", values.nombresUsuario);
-      form.append("ApellidosUsuario", values.apellidosUsuario);
-      form.append("EmailUsuario", values.emailUsuario);
-      form.append("Password", values.password);
-      form.append("IdRolUsuario", rolUsuario.idRolUsuario.toString());
-
       // Send request
-      const { data }: { data: UsuarioResponse } = await axiosInstance.post(
-        "/api/Auth/Register",
-        form
+      const data = await axiosInstance.post("/api/Auth/Register", form);
+      setRegisterButtonLoading(false);
+
+      // If user is created, authenticate
+      if (data.status === 200) {
+        authenticate({
+          username: values.emailUsuario,
+          password: values.password,
+        });
+      }
+    } catch (error: any) {
+      const data = error.response.data;
+      console.log("Error:", data.message);
+      setRegisterErrorVisible(true);
+      setRegisterError(
+        data.message === "Email is already taken"
+          ? "Ya existe un usuario con este correo electrónico. Intenta iniciar sesión."
+          : data.message === "Username is already taken"
+          ? "Ya existe un usuario con este nombre de usuario. Intenta con otro."
+          : "Error al registrarse. Inténtalo de nuevo más tarde."
       );
-
-      console.log("Success:", data);
-
-      // Authenticate user
-      authenticate({
-        username: values.emailUsuario,
-        password: values.password,
-      });
-    } catch (errorInfo) {
-      console.log("Failed in:", errorInfo);
+      setRegisterButtonLoading(false);
     }
   };
 
@@ -127,11 +160,6 @@ export default function Page() {
   useEffect(() => {
     getRolesUsuario();
   }, []);
-
-  // UseEffect for log the current user type
-  useEffect(() => {
-    console.log("Rol Usuario:", rolUsuario);
-  }, [rolUsuario]);
 
   const [backgroundImage, setBackgroundImage] = useState("img/SignIn.png");
   const isClient = typeof window !== "undefined";
@@ -154,209 +182,250 @@ export default function Page() {
             alt="Logo"
             width={150}
             height={150}
-    
           />
         </div>
       </div>
 
-      <div className="w-full lg:w-4/5 h-full flex flex-col justify-center  gap-6 px-9 py-4 lg:p-16">
+      <div className="w-full lg:w-4/5 h-full flex flex-col justify-center gap-6 px-9 py-4 lg:p-16">
         <div className="ml-4 mb-8 text-left">
-          <h2
-            className={
-              operation === "Iniciar sesión"
-                ? "text-gray-500 font-semibold text-3xl"
-                : "text-gray-500 font-semibold text-3xl"
-            }
-          >
-            {operation}
-          </h2>
+          <h2 className="text-gray-500 font-semibold text-3xl">{operation}</h2>
         </div>
 
         {operation === "Iniciar sesión" ? (
-          <Form
-            name="loginForm"
-            layout="vertical"
-            size="large"
-            onFinish={onFinishLogin}
-            onFinishFailed={onFinishLoginFailed}
-            className="w-full"
-          >
-            <Form.Item
-              label="Usuario o correo electrónico"
-              name="username"
-              rules={[
-                {
-                  required: true,
-                  message: "Por favor, ingresa tu usuario o correo",
-                },
-              ]}
+          <>
+            <Form
+              name="loginForm"
+              layout="vertical"
+              size="large"
+              onFinish={onFinishLogin}
+              onFinishFailed={onFinishLoginFailed}
+              className="w-full"
             >
-              <Input />
-            </Form.Item>
-
-            <Form.Item
-              label="Contraseña"
-              name="password"
-              rules={[
-                {
-                  required: true,
-                  message: "Por favor, ingresa tu contraseña",
-                },
-              ]}
-            >
-              <Input.Password />
-            </Form.Item>
-
-            <Form.Item>
-              <Button className="w-full mt-5" type="primary" htmlType="submit">
-                Iniciar sesión
-              </Button>
-            </Form.Item>
-            {/* Mensaje de navegación entre iniciar sesión y registrarse */}
-            <div className="flex justify-between w-full text-gray-500 mt-9">
-              <p>¿Aún no tienes una cuenta?</p>
-              <a
-                className="text-green-500 hover:text-green-700 cursor-pointer"
-                onClick={() => setOperation("Registrarse")}
-              >
-                Registrarme
-              </a>
-            </div>
-          </Form>
-        ) : (
-          <Form
-            name="registerForm"
-            layout="vertical"
-            size="middle"
-            onFinish={onFinishRegister}
-            onFinishFailed={onFinishRegisterFailed}
-            className="w-full"
-          >
-            <Form.Item name="rolUsuario" style={{ marginBottom: "2rem" }}>
-              <Radio.Group
-                optionType="button"
-                buttonStyle="solid"
-                onChange={(e) =>
-                  setRolUsuario(
-                    rolesUsuario.find(
-                      (role) => role.nombreRolUsuario === e.target.value
-                    ) || rolesUsuario[0]
-                  )
-                }
-              >
-                {rolesUsuario.map((rolUsuario) => (
-                  <Radio.Button
-                    key={rolUsuario.idRolUsuario}
-                    value={rolUsuario.nombreRolUsuario}
-                  >
-                    {rolUsuario.nombreRolUsuario === "Jugador" ? (
-                      <Space>
-                        <FilePdfOutlined />
-                        Jugador
-                      </Space>
-                    ) : rolUsuario.nombreRolUsuario === "Admin" ? (
-                      <Space>
-                        <FilePdfOutlined />
-                        Administrador
-                      </Space>
-                    ) : null}
-                  </Radio.Button>
-                ))}
-              </Radio.Group>
-            </Form.Item>
-
-            <div className="md:flex w-full gap-5">
               <Form.Item
-                className="md:w-1/2"
-                label="Nombres"
-                name="nombresUsuario"
-                rules={[
-                  {
-                    required: true,
-                    message: "Por favor, ingresa tu nombre",
-                  },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-
-              <Form.Item
-                className="md:w-1/2"
-                label="Apellidos"
-                name="apellidosUsuario"
-                rules={[
-                  {
-                    required: true,
-                    message: "Por favor, ingresa tu apellido",
-                  },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-            </div>
-
-            {rolUsuario.nombreRolUsuario === "Jugador" && (
-              <Form.Item
-                label="Nombre de usuario"
+                label="Usuario o correo electrónico"
                 name="username"
                 rules={[
                   {
                     required: true,
-                    message: "Por favor, ingresa tu nombre de usuario",
+                    message: "Por favor, ingresa tu usuario o correo",
                   },
                 ]}
               >
                 <Input />
               </Form.Item>
-            )}
 
-            <Form.Item
-              label="Correo electrónico"
-              name="emailUsuario"
-              rules={[
-                {
-                  required: true,
-                  message: "Por favor, ingresa tu correo",
-                },
-                { type: "email", message: "Ingresa un correo válido" },
+              <Form.Item
+                label="Contraseña"
+                name="password"
+                rules={[
+                  { required: true, message: 'Por favor, ingresa tu contraseña' },
+                  { min: 6, message: 'La contraseña debe tener al menos 6 caracteres' }
               ]}
-            >
-              <Input />
-            </Form.Item>
+              >
+                <Input.Password />
+              </Form.Item>
 
-            <Form.Item
-              label="Contraseña"
-              name="password"
-              rules={[
-                {
-                  required: true,
-                  message: "Por favor, ingresa tu contraseña",
-                },
+              <Form.Item>
+                <Button
+                  className="w-full mt-5"
+                  type="primary"
+                  htmlType="submit"
+                  loading={loginButtonLoading}
+                  icon={
+                    loginButtonLoading ? (
+                      <Spin indicator={<LoadingOutlined />} />
+                    ) : null
+                  }
+                >
+                  Iniciar sesión
+                </Button>
+              </Form.Item>
+
+              {loginErrorVisible && (
+                <Form.Item>
+                  <Alert
+                    message={loginError}
+                    type="error"
+                    showIcon
+                    closable
+                    afterClose={() => setLoginErrorVisible(false)}
+                  />
+                </Form.Item>
+              )}
+
+              <div className="flex justify-between w-full text-gray-500 mt-9">
+                <p>¿Aún no tienes una cuenta?</p>
+                <a
+                  className="text-green-500 hover:text-green-700 cursor-pointer"
+                  onClick={() => setOperation("Registrarse")}
+                >
+                  Registrarme
+                </a>
+              </div>
+            </Form>
+          </>
+        ) : (
+          <>
+            <Form
+              name="registerForm"
+              layout="vertical"
+              size="middle"
+              onFinish={onFinishRegister}
+              onFinishFailed={onFinishRegisterFailed}
+              className="w-full"
+            >
+              <Form.Item name="rolUsuario" style={{ marginBottom: "2rem" }}>
+                <Radio.Group
+                  optionType="button"
+                  buttonStyle="solid"
+                  style={{ display: "flex", justifyContent: "space-between" }}
+                  onChange={(e) =>
+                    setRolUsuario(
+                      rolesUsuario.find(
+                        (role) => role.nombreRolUsuario === e.target.value
+                      ) || rolesUsuario[0]
+                    )
+                  }
+                >
+                  {rolesUsuario.map((rolUsuario) => (
+                    <Radio.Button
+                      key={rolUsuario.idRolUsuario}
+                      value={rolUsuario.nombreRolUsuario}
+                      style={{
+                        flex: 1,
+                        height: isSmallScreen ? "50px" : "70px",
+                        textAlign: "center",
+                        padding: isSmallScreen ? "10px" : "15px",
+                        boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.25)",
+                      }}
+                    >
+                      {rolUsuario.nombreRolUsuario === "Jugador" ? (
+                        <Space>
+                          <LuBanana
+                            style={{ fontSize: isSmallScreen ? "20px" : "30px" }}
+                          />
+                          Quiero jugar GreenPeel Adventure
+                        </Space>
+                      ) : rolUsuario.nombreRolUsuario === "Admin" ? (
+                        <Space>
+                          <GiFarmer size={isSmallScreen ? 20 : 30} />
+                          Quiero Gestionar mis Residuos
+                        </Space>
+                      ) : null}
+                    </Radio.Button>
+                  ))}
+                </Radio.Group>
+              </Form.Item>
+
+              <div className="md:flex w-full gap-5">
+                <Form.Item
+                  className="md:w-1/2"
+                  label="Nombres"
+                  name="nombresUsuario"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Por favor, ingresa tu nombre",
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+
+                <Form.Item
+                  className="md:w-1/2"
+                  label="Apellidos"
+                  name="apellidosUsuario"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Por favor, ingresa tu apellido",
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+              </div>
+
+              {rolUsuario.nombreRolUsuario === "Jugador" && (
+                <Form.Item
+                  label="Nombre de usuario"
+                  name="username"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Por favor, ingresa tu nombre de usuario",
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+              )}
+
+              <Form.Item
+                label="Correo electrónico"
+                name="emailUsuario"
+                rules={[
+                  {
+                    required: true,
+                    message: "Por favor, ingresa tu correo",
+                  },
+                  { type: "email", message: "Ingresa un correo válido" },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+
+              <Form.Item
+                label="Contraseña"
+                name="password"
+                rules={[
+                  { required: true, message: 'Por favor, ingresa tu contraseña!' },
+                  { min: 6, message: 'La contraseña debe tener al menos 6 caracteres' }
               ]}
-            >
-              <Input.Password />
-            </Form.Item>
+              >
+                <Input.Password />
+              </Form.Item>
 
-            <Form.Item className="mt-5">
-              <Button
-                className="w-full mt-9 bg-green-500 hover:bg-green-700 text-white py-2 px-4 rounded"
-                type="primary"
-                htmlType="submit"
-              >
-                Registrarse
-              </Button>
-            </Form.Item>
-            {/* Mensaje de navegación entre iniciar sesión y registrarse */}
-            <div className="flex justify-between w-full text-gray-500 mt-9">
-              <p>¿Ya tienes una cuenta?</p>
-              <a
-                className="text-green-500 hover:text-green-700 cursor-pointer"
-                onClick={() => setOperation("Iniciar sesión")}
-              >
-                Iniciar sesión
-              </a>
-            </div>
-          </Form>
+              <Form.Item className="mt-5">
+                <Button
+                  className="w-full mt-9 bg-green-500 hover:bg-green-700 text-white py-2 px-4 rounded"
+                  type="primary"
+                  htmlType="submit"
+                  loading={registerButtonLoading}
+                  icon={
+                    registerButtonLoading ? (
+                      <Spin indicator={<LoadingOutlined />} />
+                    ) : null
+                  }
+                >
+                  Registrarse
+                </Button>
+              </Form.Item>
+
+              {registerErrorVisible && (
+                <Form.Item>
+                  <Alert
+                    message={registerError}
+                    type="error"
+                    showIcon
+                    closable
+                    afterClose={() => setRegisterErrorVisible(false)}
+                  />
+                </Form.Item>
+              )}
+
+              <div className="flex justify-between w-full text-gray-500 mt-9">
+                <p>¿Ya tienes una cuenta?</p>
+                <a
+                  className="text-green-500 hover:text-green-700 cursor-pointer"
+                  onClick={() => setOperation("Iniciar sesión")}
+                >
+                  Iniciar sesión
+                </a>
+              </div>
+            </Form>
+          </>
         )}
       </div>
       <div
