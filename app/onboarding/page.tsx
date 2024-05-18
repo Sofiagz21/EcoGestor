@@ -5,6 +5,7 @@ import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
 import axiosInstance from "@/axiosInterceptor";
 import { format, startOfDay, isValid } from "date-fns";
+import Image from "next/image";
 
 export default function OnboardingPage() {
   const [loading, setLoading] = useState<boolean>(false);
@@ -13,16 +14,15 @@ export default function OnboardingPage() {
   const [usuario, setUsuario] = useState<AuthResponse | null>(null);
   const [gameHasResiduo, setGameHasResiduo] = useState<boolean>();
   const [isGameAccountReady, setIsGameAccountReady] = useState<boolean>();
-  
-  
+
   function handleRegisterWaste() {
     // Aquí va el código para manejar el registro de residuos
   }
-  
+
   function handleRegisterWasteRoute() {
     // Aquí va el código para manejar el registro de una ruta de residuos
   }
-  
+
   function handleRegisterQualityControl() {
     // Aquí va el código para manejar el registro de un control de calidad
   }
@@ -112,90 +112,49 @@ export default function OnboardingPage() {
   }, [usuario]);
 
   return (
-    <div className="w-screen h-screen flex justify-center items-center p-8">
-      <div
-        className={`${
-          usuario && usuario.idRolUsuario === 1 ? "lg:w-1/2" : "lg:w-1/4"
-        } h-full flex justify-center items-center`}
-      >
-        {usuario && usuario.idRolUsuario === 1 ? (
-          <div>
-            <h2>Bienvenido agro</h2>
+    <div
+      className="w-screen h-screen p-8"
+      style={{ backgroundColor: "#D8E3CA" }}
+    >
+      <div className="w-full">
+        <div className="bg-white border-[#E0F0CA] p-6 rounded-md shadow-md mb-8 w-full flex items-center p-10">
+          <div className="flex-1">
+            <h2 className="text-3xl lg:text-3xl font-extrabold mb-2">
+              Bienvenido a EcoGestor
+            </h2>
+            <p className="text-brown text-base lg:text-base mb-4 pt-4">
+              EcoGestor es tu herramienta para gestionar residuos y optimizar
+              tus procesos agrícolas.
+            </p>
           </div>
-        ) : usuario &&
-          usuario.idRolUsuario === 2 &&
-          (gameHasResiduo || isGameAccountReady) ? (
-          <div>
-            <h2>Agricultor</h2>
+          <div className="flex items-center flex-shrink-0 lg:block hidden">
+            <Image
+              src="/img/compost.svg"
+              alt="EcoGestor"
+              width={180} // increased size
+              height={180} // increased size
+              className="object-cover rounded-md"
+            />
           </div>
-        ) : usuario &&
-          usuario.idRolUsuario === 2 &&
-          gameHasResiduo !== undefined &&
-          isGameAccountReady !== undefined &&
-          !gameHasResiduo &&
-          !isGameAccountReady ? (
-          <div>
-            <h2>JUGADOR</h2>
-          </div>
-        ) : (
-          <Skeleton.Image style={{ width: 400, height: 400 }} active />
-        )}
-      </div>
+        </div>
 
-      <div className="bg-white p-8 rounded-lg shadow-md">
-        <h1 className="text-brown text-3xl lg:text-4xl font-extrabold">
-          {usuario && usuario.idRolUsuario === 1 ? (
-            "Empecemos registrando tu finca"
-          ) : usuario &&
-            usuario.idRolUsuario === 2 &&
-            (gameHasResiduo || isGameAccountReady) ? (
-            "¡Tu cuenta para jugar está lista!"
-          ) : usuario &&
-            usuario.idRolUsuario === 2 &&
-            gameHasResiduo !== undefined &&
-            isGameAccountReady !== undefined &&
-            !gameHasResiduo &&
-            !isGameAccountReady ? (
-            "Estamos configurando tu cuenta..."
-          ) : (
-            <Skeleton.Input block active />
-          )}
-        </h1>
-        <div className="text-brown text-sm lg:text-base">
-          {usuario && usuario.idRolUsuario === 1 ? (
-            <>
-              Agrega a continuación los datos de tu finca para comenzar a usar
-              la plataforma.&nbsp;
-              <b>
-                Podrás cambiar la información o agregar más fincas
-                posteriormente.
-              </b>
-            </>
-          ) : usuario &&
-            usuario.idRolUsuario === 2 &&
-            (gameHasResiduo || isGameAccountReady) ? (
-            <>
-              ¡Ya puedes jugar a Green Peel Adventure!&nbsp;
-              <b>Abre el juego e inicia sesión con esta cuenta.</b>
-            </>
-          ) : usuario &&
-            usuario.idRolUsuario === 2 &&
-            gameHasResiduo !== undefined &&
-            isGameAccountReady !== undefined &&
-            !gameHasResiduo &&
-            !isGameAccountReady ? (
-            <>Este proceso sólo tomará un momento</>
-          ) : (
-            <Skeleton active className="mx-8 lg:mx-0" />
-          )}
-        </div>
         {usuario && usuario.idRolUsuario === 1 && (
-          <div>
-          <h2>¿Qué deseas realizar hoy?</h2>
-          <Button type="primary" onClick={handleRegisterWaste}>Registrar residuos</Button>
-          <Button type="primary" onClick={handleRegisterWasteRoute}>Registrar una ruta de residuos</Button>
-          <Button type="primary" onClick={handleRegisterQualityControl}>Registrar un control de calidad</Button>
-        </div>
+          <div className="bg-white p-6 rounded-md shadow-md w-full">
+            <h2 className="text-lg font-semibold mb-4">
+              ¿Qué deseas hacer en EcoGestor?
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Button type="primary" onClick={handleRegisterWaste}>
+                Registrar residuos
+              </Button>
+              <Button type="primary" onClick={handleRegisterWasteRoute}>
+                Registrar una ruta de residuos
+              </Button>
+              <Button type="primary" onClick={handleRegisterQualityControl}>
+                Registrar un control de calidad
+              </Button>
+            </div>
+          </div>
         )}
       </div>
     </div>
