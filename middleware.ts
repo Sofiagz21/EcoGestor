@@ -45,6 +45,11 @@ export async function middleware(request: NextRequest) {
         const idUsuario= usuarioValue ? JSON.parse(usuarioValue).idUsuario : undefined;
         if (!idUsuario) return NextResponse.redirect(new URL("/login", request.nextUrl.origin));
         
+        
+        // Hardcoded value for players
+        if (usuarioValue && JSON.parse(usuarioValue).userTypeID === 2) 
+            return NextResponse.redirect(new URL("/onboarding", request.nextUrl.origin));
+        
         const data = await fetch(
             `http://localhost:3000/api/Residuos?Filters=IdUsuario%3D%3D${idUsuario}`,
             { headers: { Authorization: `Bearer ${token}` }, })
