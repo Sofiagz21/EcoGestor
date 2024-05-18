@@ -1,15 +1,14 @@
 interface Residuo{
-    idUsuario: number,
     nombreResiduo: string,
     fechaRegistro: Date,
-    cantidadRegistrada: string
+    cantidadRegistrada: string,
+    idEstadoResiduo?: number,
 }
 
 
 interface ResiduoResponse extends Residuo{
+    idUsuario:number,
     idResiduo: number,
-    idEstadoResiduo: number,
-    
-    usuario: UsuarioResponse,
     estadoResiduo?: EstadoResiduo;
+    usuario: UsuarioResponse,
 }

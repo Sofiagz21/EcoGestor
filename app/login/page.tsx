@@ -44,7 +44,6 @@ export default function LoginPage() {
     try {
       const data = await axiosInstance.get("/api/RolUsuario");
       setRolesUsuario(data.data);
-      console.log("Roles de usuario:", data);
     } catch (error) {
       console.error("Error al obtener los roles de usuario:", error);
     }
@@ -372,7 +371,7 @@ export default function LoginPage() {
                   { type: "email", message: "Ingresa un correo válido" },
                 ]}
               >
-                <Input />
+                <Input type='email'/>
               </Form.Item>
 
               <Form.Item
