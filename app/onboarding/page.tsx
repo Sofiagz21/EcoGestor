@@ -1,11 +1,16 @@
 "use client";
 
-import { Button, Form, Input, Select, DatePicker, Skeleton } from "antd";
+import { Button, Form, Input, Select, DatePicker, Skeleton, Card } from "antd";
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
 import axiosInstance from "@/axiosInterceptor";
 import { format, startOfDay, isValid } from "date-fns";
 import Image from "next/image";
+import {
+  CheckCircleOutlined,
+  EnvironmentOutlined,
+  SafetyOutlined,
+} from "@ant-design/icons";
 
 export default function OnboardingPage() {
   const [loading, setLoading] = useState<boolean>(false);
@@ -113,49 +118,86 @@ export default function OnboardingPage() {
 
   return (
     <div
-      className="w-screen h-screen p-8"
-      style={{ backgroundColor: "#D8E3CA" }}
+      className="w-screen h-screen p-8 flex flex-col justify-center items-center"
+      style={{ backgroundColor: "#FFFFFF" }} // Fondo blanco
     >
+      <div className="w-full max-w-3xl text-center mb-10">
+        <h2 className="text-4xl lg:text-6xl font-bold mb-2 text-green">
+          Bienvenido a EcoGestor
+        </h2>
+        <p className="text-brown text-base lg:text-lg mb-4 text-gray">
+          EcoGestor es tu herramienta para gestionar residuos y optimizar tus
+          procesos agrícolas.
+        </p>
+      </div>
       <div className="w-full">
-        <div className="bg-white border-[#E0F0CA] p-6 rounded-md shadow-md mb-8 w-full flex items-center p-10">
-          <div className="flex-1">
-            <h2 className="text-3xl lg:text-3xl font-extrabold mb-2">
-              Bienvenido a EcoGestor
-            </h2>
-            <p className="text-brown text-base lg:text-base mb-4 pt-4">
-              EcoGestor es tu herramienta para gestionar residuos y optimizar
-              tus procesos agrícolas.
-            </p>
-          </div>
-          <div className="flex items-center flex-shrink-0 lg:block hidden">
-            <Image
-              src="/img/compost.svg"
-              alt="EcoGestor"
-              width={180} // increased size
-              height={180} // increased size
-              className="object-cover rounded-md"
-            />
+        <div className="p-6 rounded-lg">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card
+              onClick={handleRegisterWaste}
+              hoverable
+              style={{ backgroundColor: "#8AC942" }} 
+              className="text-center rounded-md shadow-md h-[240px] flex flex-col justify-center items-center p-4" // Reduced height and added padding
+            >
+              <CheckCircleOutlined
+                style={{
+                  fontSize: "3rem",
+                  color: "#FFF",
+                  marginBottom: "1rem",
+                }} 
+              />
+              <h4 className="text-lg font-bold mt-2 mb-1 text-white">
+                Registrar residuos
+              </h4>{" "}
+              <p className="text-base mt-1">
+                {" "}
+                Añade información sobre los residuos generados en tu finca.
+              </p>
+            </Card>
+            <Card
+              onClick={handleRegisterWasteRoute}
+              hoverable
+              style={{ backgroundColor: "#8AC942" }} 
+              className="text-center rounded-md shadow-md h-[240px] flex flex-col justify-center items-center p-4" // Reduced height and added padding
+            >
+              <EnvironmentOutlined
+                style={{
+                  fontSize: "3rem",
+                  color: "#FFF",
+                  marginBottom: "1rem",
+                }} 
+              />
+              <h4 className="text-lg font-bold mt-2 mb-1 text-white">
+                Registrar una ruta de residuos
+              </h4>{" "}
+              <p className="text-base mt-1">
+                {" "}
+                Define las rutas para el manejo y recolección de residuos.
+              </p>
+            </Card>
+            <Card
+              onClick={handleRegisterQualityControl}
+              hoverable
+              style={{ backgroundColor: "#8AC942" }} 
+              className="text-center rounded-md shadow-md h-[240px] flex flex-col justify-center items-center p-4" // Reduced height and added padding
+            >
+              <SafetyOutlined
+                style={{
+                  fontSize: "3rem",
+                  color: "#FFF",
+                  marginBottom: "1rem",
+                }}
+              />{" "}
+              <h4 className="text-lg font-bold mt-2 mb-1 text-white">
+                Registrar un control de calidad
+              </h4>{" "}
+              <p className="text-base mt-1">
+                {" "}
+                Registra controles de calidad para los procesos agrícolas.
+              </p>
+            </Card>
           </div>
         </div>
-
-        {usuario && usuario.idRolUsuario === 1 && (
-          <div className="bg-white p-6 rounded-md shadow-md w-full">
-            <h2 className="text-lg font-semibold mb-4">
-              ¿Qué deseas hacer en EcoGestor?
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Button type="primary" onClick={handleRegisterWaste}>
-                Registrar residuos
-              </Button>
-              <Button type="primary" onClick={handleRegisterWasteRoute}>
-                Registrar una ruta de residuos
-              </Button>
-              <Button type="primary" onClick={handleRegisterQualityControl}>
-                Registrar un control de calidad
-              </Button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

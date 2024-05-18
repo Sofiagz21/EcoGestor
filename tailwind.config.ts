@@ -13,7 +13,7 @@ const config: Config = {
         'green': {
           DEFAULT: '#659E25'
         },
-        'greenSecondary':{
+        'green-secondary':{
           DEFAULT: '#8AC942'
         },
         'orange':{
