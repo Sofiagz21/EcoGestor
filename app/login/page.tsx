@@ -6,14 +6,19 @@ import { Alert, Button, Form, Input, Radio, Space, Spin } from "antd";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
-import { UserOutlined, UserSwitchOutlined, LoadingOutlined } from "@ant-design/icons";
+import {
+  UserOutlined,
+  UserSwitchOutlined,
+  LoadingOutlined,
+} from "@ant-design/icons";
 import { GiFarmer } from "react-icons/gi";
 import { LuBanana } from "react-icons/lu";
 
-
 export default function LoginPage() {
   const [rolesUsuario, setRolesUsuario] = useState<RolUsuario[]>([]);
-  const [operation, setOperation] = useState<"Iniciar sesión" | "Registrarse">("Iniciar sesión");
+  const [operation, setOperation] = useState<"Iniciar sesión" | "Registrarse">(
+    "Iniciar sesión"
+  );
 
   const [rolUsuario, setRolUsuario] = useState<RolUsuario>({
     idRolUsuario: 1,
@@ -21,12 +26,14 @@ export default function LoginPage() {
   });
 
   const [loginButtonLoading, setLoginButtonLoading] = useState<boolean>(false);
-  const [registerButtonLoading, setRegisterButtonLoading] = useState<boolean>(false);
+  const [registerButtonLoading, setRegisterButtonLoading] =
+    useState<boolean>(false);
 
   const [loginError, setLoginError] = useState<string | null>(null);
   const [registerError, setRegisterError] = useState<string | null>(null);
   const [loginErrorVisible, setLoginErrorVisible] = useState<boolean>(false);
-  const [registerErrorVisible, setRegisterErrorVisible] = useState<boolean>(false);
+  const [registerErrorVisible, setRegisterErrorVisible] =
+    useState<boolean>(false);
 
   const axiosInstance = axios.create();
 
@@ -43,6 +50,7 @@ export default function LoginPage() {
     setLoginButtonLoading(true);
     setRegisterButtonLoading(true);
     const form: FormData = new FormData();
+    form.append("IdRolUsuario", rolUsuario.idRolUsuario.toString());
     if (values?.username.includes("@")) {
       form.append("EmailUsuario", values.username);
     } else {
@@ -52,7 +60,10 @@ export default function LoginPage() {
     form.append("Password", values.password);
 
     try {
-      const { data, status } = await axiosInstance.post("/api/Auth/Login", form);
+      const { data, status } = await axiosInstance.post(
+        "/api/Auth/Login",
+        form
+      );
       if (status === 200) {
         Cookies.set("token", data.token);
         Cookies.set("usuario", JSON.stringify(data));
@@ -82,7 +93,9 @@ export default function LoginPage() {
     authenticate(values);
   };
 
-  const onFinishLoginFailed: FormProps<AuthRequest>["onFinishFailed"] = (errorInfo) => {
+  const onFinishLoginFailed: FormProps<AuthRequest>["onFinishFailed"] = (
+    errorInfo
+  ) => {
     console.log("Failed:", errorInfo);
   };
 
@@ -98,7 +111,10 @@ export default function LoginPage() {
     if (values.username) form.append("Username", values.username);
 
     try {
-      const { data, status } = await axiosInstance.post("/api/Auth/Register", form);
+      const { data, status } = await axiosInstance.post(
+        "/api/Auth/Register",
+        form
+      );
       setRegisterButtonLoading(false);
 
       if (status === 200) {
@@ -122,7 +138,9 @@ export default function LoginPage() {
     }
   };
 
-  const onFinishRegisterFailed: FormProps<Usuario>["onFinishFailed"] = (errorInfo) => {
+  const onFinishRegisterFailed: FormProps<Usuario>["onFinishFailed"] = (
+    errorInfo
+  ) => {
     console.log("Failed:", errorInfo);
   };
 
@@ -135,14 +153,21 @@ export default function LoginPage() {
   const isSmallScreen = isClient && window.innerWidth < 768;
 
   useEffect(() => {
-    setBackgroundImage(operation === "Iniciar sesión" ? "img/SignIn.png" : "img/Register.png");
+    setBackgroundImage(
+      operation === "Iniciar sesión" ? "img/SignIn.png" : "img/Register.png"
+    );
   }, [operation]);
 
   return (
     <div className="w-screen h-full lg:h-screen flex flex-col lg:flex-row justify-center lg:items-center overflow-hidden">
       <div className="lg:absolute lg:top-0 lg:left-5 flex flex-col justify-center items-start gap-6">
         <div>
-          <Image src="/img/LogoEcogestor.svg" alt="Logo" width={150} height={150} />
+          <Image
+            src="/img/LogoEcogestor.svg"
+            alt="Logo"
+            width={150}
+            height={150}
+          />
         </div>
       </div>
 
@@ -161,10 +186,52 @@ export default function LoginPage() {
             className="w-full"
           >
             <Form.Item
+              name="rolUsuario"
+              style={{ marginBottom: "2rem", width: "100%" }}
+            >
+              <Radio.Group
+                optionType="button"
+                buttonStyle="solid"
+                style={{ width: "100%" }}
+                className="custom-radio-group w-full custom-radio-font"
+                onChange={(e) =>
+                  setRolUsuario(
+                    rolesUsuario.find(
+                      (role) => role.nombreRolUsuario === e.target.value
+                    ) || rolesUsuario[0]
+                  )
+                }
+              >
+                {rolesUsuario.map((rolUsuario) => (
+                  <Radio.Button
+                    key={rolUsuario.idRolUsuario}
+                    value={rolUsuario.nombreRolUsuario}
+                    className="custom-radio-button"
+                  >
+                    {rolUsuario.nombreRolUsuario === "Jugador" ? (
+                      <Space>
+                        <LuBanana className="icon" />
+                        Iniciar sesión como Jugador
+                      </Space>
+                    ) : rolUsuario.nombreRolUsuario === "Admin" ? (
+                      <Space>
+                        <GiFarmer className="icon" />
+                        Iniciar sesión como Administrador
+                      </Space>
+                    ) : null}
+                  </Radio.Button>
+                ))}
+              </Radio.Group>
+            </Form.Item>
+
+            <Form.Item
               label="Usuario o correo electrónico"
               name="username"
               rules={[
-                { required: true, message: "Por favor, ingresa tu usuario o correo" },
+                {
+                  required: true,
+                  message: "Por favor, ingresa tu usuario o correo",
+                },
               ]}
             >
               <Input />
@@ -174,8 +241,11 @@ export default function LoginPage() {
               label="Contraseña"
               name="password"
               rules={[
-                { required: true, message: 'Por favor, ingresa tu contraseña' },
-                { min: 6, message: 'La contraseña debe tener al menos 6 caracteres' }
+                { required: true, message: "Por favor, ingresa tu contraseña" },
+                {
+                  min: 6,
+                  message: "La contraseña debe tener al menos 6 caracteres",
+                },
               ]}
             >
               <Input.Password />
@@ -187,7 +257,11 @@ export default function LoginPage() {
                 type="primary"
                 htmlType="submit"
                 loading={loginButtonLoading}
-                icon={loginButtonLoading ? <Spin indicator={<LoadingOutlined />} /> : null}
+                icon={
+                  loginButtonLoading ? (
+                    <Spin indicator={<LoadingOutlined />} />
+                  ) : null
+                }
               >
                 Iniciar sesión
               </Button>
@@ -228,10 +302,12 @@ export default function LoginPage() {
               <Radio.Group
                 optionType="button"
                 buttonStyle="solid"
-                style={{ display: "flex", justifyContent: "space-between" }}
+                className="custom-radio-group custom-radio-font"
                 onChange={(e) =>
                   setRolUsuario(
-                    rolesUsuario.find(role => role.nombreRolUsuario === e.target.value) || rolesUsuario[0]
+                    rolesUsuario.find(
+                      (role) => role.nombreRolUsuario === e.target.value
+                    ) || rolesUsuario[0]
                   )
                 }
               >
@@ -239,22 +315,16 @@ export default function LoginPage() {
                   <Radio.Button
                     key={rolUsuario.idRolUsuario}
                     value={rolUsuario.nombreRolUsuario}
-                    style={{
-                      flex: 1,
-                      height: isSmallScreen ? "50px" : "70px",
-                      textAlign: "center",
-                      padding: isSmallScreen ? "10px" : "15px",
-                      boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.25)",
-                    }}
+                    className="custom-radio-button"
                   >
                     {rolUsuario.nombreRolUsuario === "Jugador" ? (
                       <Space>
-                        <LuBanana style={{ fontSize: isSmallScreen ? "20px" : "30px" }} />
+                        <LuBanana className="icon" />
                         Quiero jugar GreenPeel Adventure
                       </Space>
                     ) : rolUsuario.nombreRolUsuario === "Admin" ? (
                       <Space>
-                        <GiFarmer size={isSmallScreen ? 20 : 30} />
+                        <GiFarmer className="icon" />
                         Quiero Gestionar mis Residuos
                       </Space>
                     ) : null}
@@ -292,7 +362,10 @@ export default function LoginPage() {
                 label="Nombre de usuario"
                 name="username"
                 rules={[
-                  { required: true, message: "Por favor, ingresa tu nombre de usuario" },
+                  {
+                    required: true,
+                    message: "Por favor, ingresa tu nombre de usuario",
+                  },
                 ]}
               >
                 <Input />
@@ -307,15 +380,21 @@ export default function LoginPage() {
                 { type: "email", message: "Ingresa un correo válido" },
               ]}
             >
-              <Input type='email'/>
+              <Input type="email" />
             </Form.Item>
 
             <Form.Item
               label="Contraseña"
               name="password"
               rules={[
-                { required: true, message: 'Por favor, ingresa tu contraseña!' },
-                { min: 6, message: 'La contraseña debe tener al menos 6 caracteres' }
+                {
+                  required: true,
+                  message: "Por favor, ingresa tu contraseña!",
+                },
+                {
+                  min: 6,
+                  message: "La contraseña debe tener al menos 6 caracteres",
+                },
               ]}
             >
               <Input.Password />
@@ -327,7 +406,11 @@ export default function LoginPage() {
                 type="primary"
                 htmlType="submit"
                 loading={registerButtonLoading}
-                icon={registerButtonLoading ? <Spin indicator={<LoadingOutlined />} /> : null}
+                icon={
+                  registerButtonLoading ? (
+                    <Spin indicator={<LoadingOutlined />} />
+                  ) : null
+                }
               >
                 Registrarse
               </Button>

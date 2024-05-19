@@ -1,23 +1,17 @@
+
 "use client";
 
 import { Button, Form, Input, Select, DatePicker, Skeleton, Card } from "antd";
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
 import axiosInstance from "@/axiosInterceptor";
-import { format, startOfDay, isValid } from "date-fns";
-import Image from "next/image";
-import {
-  CheckCircleOutlined,
-  EnvironmentOutlined,
-  SafetyOutlined,
-} from "@ant-design/icons";
+import { CheckCircleOutlined, EnvironmentOutlined, SafetyOutlined } from "@ant-design/icons";
 
 export default function OnboardingPage() {
   const [loading, setLoading] = useState<boolean>(false);
-
   const [usuario, setUsuario] = useState<AuthResponse | null>(null);
-  const [gameHasPartida, setGameHasPartida] = useState<boolean>();
-  const [isGameAccountReady, setIsGameAccountReady] = useState<boolean>();
+  const [gameHasPartida, setGameHasPartida] = useState<boolean | null>(null);
+  const [isGameAccountReady, setIsGameAccountReady] = useState<boolean | null>(null);
 
   const checkPlayerPartida = async () => {
     if (!usuario) return;
@@ -37,6 +31,8 @@ export default function OnboardingPage() {
       }
     } catch (error) {
       console.error("Error checking player partida:", error);
+      setGameHasPartida(false);
+      setIsGameAccountReady(false);
     }
   };
 
@@ -56,6 +52,7 @@ export default function OnboardingPage() {
       }
     } catch (err) {
       console.error("Error creating partida:", err);
+      setIsGameAccountReady(false);
     }
   };
 
@@ -78,32 +75,33 @@ export default function OnboardingPage() {
   }, []);
 
   useEffect(() => {
-    console.log(usuario);
-    // check if player has a partida
-    checkPlayerPartida();
+    if (usuario) {
+      console.log(usuario);
+      // check if player has a partida
+      checkPlayerPartida();
+    }
   }, [usuario]);
 
   return (
     <div className="w-full h-screen flex flex-col justify-center items-center gap-8 p-8">
       {usuario && usuario.idRolUsuario === 1 ? (
         <div className="w-full max-w-3xl text-center mb-10">
-          <h2 className="text-4xl lg:text-6xl font-bold mb-2 text-green">
+          <h2 className="text-4xl lg:text-6xl font-bold mb-2" style={{ color: "#659E25" }}>
             Bienvenido a EcoGestor
           </h2>
-          <p className="text-brown text-base lg:text-lg mb-4 text-gray">
-            EcoGestor es tu herramienta para gestionar residuos y optimizar tus
-            procesos agrícolas.
+          <p className="text-base lg:text-lg mb-4 text-gray">
+            EcoGestor es tu herramienta para gestionar residuos y optimizar tus procesos agrícolas.
           </p>
         </div>
       ) : null}
-  
+
       {usuario && usuario.idRolUsuario === 1 && (
         <div className="w-full p-6 rounded-lg">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card
               hoverable
-              style={{ backgroundColor: "#8AC942" }}
-              className="text-center rounded-md shadow-md h-[240px] flex flex-col justify-center items-center p-4" // Reduced height and added padding
+              style={{ backgroundColor: "#B5E48C" }}
+              className="text-center rounded-md shadow-md h-[240px] flex flex-col justify-center items-center p-4"
             >
               <CheckCircleOutlined
                 style={{
@@ -114,16 +112,15 @@ export default function OnboardingPage() {
               />
               <h4 className="text-lg font-bold mt-2 mb-1 text-white">
                 Registrar residuos
-              </h4>{" "}
-              <p className="text-base mt-1">
-                {" "}
+              </h4>
+              <p className="text-base mt-1 text-white">
                 Añade información sobre los residuos generados en tu finca.
               </p>
             </Card>
             <Card
               hoverable
-              style={{ backgroundColor: "#8AC942" }}
-              className="text-center rounded-md shadow-md h-[240px] flex flex-col justify-center items-center p-4" // Reduced height and added padding
+              style={{ backgroundColor: "#B5E48C" }}
+              className="text-center rounded-md shadow-md h-[240px] flex flex-col justify-center items-center p-4"
             >
               <EnvironmentOutlined
                 style={{
@@ -134,16 +131,15 @@ export default function OnboardingPage() {
               />
               <h4 className="text-lg font-bold mt-2 mb-1 text-white">
                 Registrar una ruta de residuos
-              </h4>{" "}
-              <p className="text-base mt-1">
-                {" "}
+              </h4>
+              <p className="text-base mt-1 text-white">
                 Define las rutas para el manejo y recolección de residuos.
               </p>
             </Card>
             <Card
               hoverable
-              style={{ backgroundColor: "#8AC942" }}
-              className="text-center rounded-md shadow-md h-[240px] flex flex-col justify-center items-center p-4" // Reduced height and added padding
+              style={{ backgroundColor: "#B5E48C" }}
+              className="text-center rounded-md shadow-md h-[240px] flex flex-col justify-center items-center p-4"
             >
               <SafetyOutlined
                 style={{
@@ -151,41 +147,52 @@ export default function OnboardingPage() {
                   color: "#FFF",
                   marginBottom: "1rem",
                 }}
-              />{" "}
+              />
               <h4 className="text-lg font-bold mt-2 mb-1 text-white">
                 Registrar un control de calidad
-              </h4>{" "}
-              <p className="text-base mt-1">
-                {" "}
+              </h4>
+              <p className="text-base mt-1 text-white">
                 Registra controles de calidad para los procesos agrícolas.
               </p>
             </Card>
           </div>
         </div>
       )}
-  
+
       {usuario && usuario.idRolUsuario === 2 && (gameHasPartida || isGameAccountReady) && (
-        <div className="w-full max-w-3xl text-center mt-10">
-          <h1 className="text-brown text-3xl lg:text-4xl font-extrabold">
-            ¡Tu cuenta para jugar está lista!
-          </h1>
-          <div className="text-brown text-sm lg:text-base">
-            ¡Ya puedes jugar a Tabiland!&nbsp;
-            <b>Abre el juego e inicia sesión con esta cuenta.</b>
-          </div>
+        <div className="w-full flex justify-center items-center mt-10">
+          <Card
+            hoverable
+            style={{ backgroundColor: "#D9EAD3", height: "70vh", width: "80vw" }}
+            className="text-center rounded-md shadow-md p-6 flex flex-col justify-center items-center"
+          >
+            <h1 className="text-5xl font-bold mb-12" style={{ color: "#659E25" }}>
+              ¡Hola! {usuario.username} 👩‍🌾👨‍🌾
+            </h1>
+            <h2 className="text-2xl font-regular mt-3 mb-6" style={{ color: "#19233B" }}>
+              ¡Ya tienes tu cuenta lista para jugar a Green Peel Adventure! 🎮🍌
+            </h2>
+            <p className="text-xl lg:text-2xl mb-6" style={{ color: "#19233B" }}>
+              
+              <b>Abre el juego e inicia sesión con esta cuenta.</b>
+            </p>
+            <p className="text-lg lg:text-xl" style={{ color: "#659E25" }}>
+              🎉 ¡Diviértete y disfruta de la aventura! 🌱
+            </p>
+          </Card>
         </div>
       )}
-  
-      {usuario && usuario.idRolUsuario === 2 && gameHasPartida !== undefined && isGameAccountReady !== undefined && !gameHasPartida && !isGameAccountReady && (
+
+      {usuario && usuario.idRolUsuario === 2 && gameHasPartida === false && isGameAccountReady === false && (
         <div className="w-full max-w-3xl text-center mt-10">
-          <h1 className="text-brown text-3xl lg:text-4xl font-extrabold">
+          <h1 className="text-3xl lg:text-4xl font-extrabold" style={{ color: "#659E25" }}>
             Estamos configurando tu cuenta...
           </h1>
-          <div className="text-brown text-sm lg:text-base">
+          <div className="text-sm lg:text-base" style={{ color: "#659E25" }}>
             Este proceso sólo tomará un momento
           </div>
         </div>
       )}
     </div>
   );
-}  
+}
