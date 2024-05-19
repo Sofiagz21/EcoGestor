@@ -56,7 +56,7 @@ export async function middleware(request: NextRequest) {
             .then((res) => res.json())
             .catch((err) => console.log(err));
 
-        if (data.length === 0) {
+        if (data && data.length===0) {
             return NextResponse.redirect(new URL("/onboarding", request.nextUrl.origin));
         }        
     }
