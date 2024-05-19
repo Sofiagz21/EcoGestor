@@ -38,7 +38,7 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL("/dashboard", request.nextUrl.origin));
     }
 
-    // Check if user has farms, instead redirect to onboarding
+    
     if (request.nextUrl.pathname == '/dashboard' && decodedToken) {
         // Search for user farms. Use fetch
         const usuarioValue = request.cookies.get("usuario")?.value;
@@ -51,15 +51,13 @@ export async function middleware(request: NextRequest) {
             return NextResponse.redirect(new URL("/onboarding", request.nextUrl.origin));
         
         const data = await fetch(
-            `http://localhost:3000/api/Residuos?Filters=IdUsuario%3D%3D${idUsuario}`,
+            `http://localhost:3000/api/Partida?Filters=IdUsuario%3D%3D${idUsuario}`,
             { headers: { Authorization: `Bearer ${token}` }, })
             .then((res) => res.json())
             .catch((err) => console.log(err));
 
         if (data.length === 0) {
             return NextResponse.redirect(new URL("/onboarding", request.nextUrl.origin));
-        }
+        }        
     }
-
-
 }

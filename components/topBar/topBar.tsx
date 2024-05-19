@@ -66,15 +66,19 @@ export default function TopBar() {
   useEffect(() => {
     // Set user cookies
     const usuarioCookie = Cookies.get("usuario");
-    if (usuarioCookie) {
-      setUsuario(JSON.parse(usuarioCookie));
-      console.log("From TopBar", usuario);
-    }
-
-    // Get user farms
-    if (usuario) getResiduos();
+    if(usuarioCookie) setUsuario(JSON.parse(usuarioCookie));
   }, []);
-
+  
+  useEffect(() => {
+    console.log('From TopBar:', usuario);
+    if (usuario) {
+        if (usuario.idRolUsuario === 1) {
+            getResiduos();
+        } else if (usuario.idRolUsuario === 2) {
+            getPartidas();
+        }
+    }
+}, [usuario]);
   // Dropdown menu items
   const items: MenuProps["items"] = [
     {
