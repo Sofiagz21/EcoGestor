@@ -19,7 +19,7 @@ const config: Config = {
         'orange':{
           DEFAULT: '#FF9933'
         },
-        'darkBlue':{
+        'dark-blue':{
           DEFAULT: '#19233B'
         },
         'gray':{

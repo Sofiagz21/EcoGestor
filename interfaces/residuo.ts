@@ -12,3 +12,4 @@ interface ResiduoResponse extends Residuo{
     estadoResiduo?: EstadoResiduo;
     usuario: UsuarioResponse,
 }
+
