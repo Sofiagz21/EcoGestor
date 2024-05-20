@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -12,59 +11,37 @@ import {
   Card,
   Row,
   Col,
-  Modal,
 } from "antd";
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
 import axiosInstance from "@/axiosInterceptor";
-import moment from "moment";
+import { format, isValid } from "date-fns";
 
 export default function ResiduoPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [estadosResiduos, setEstadosResiduos] = useState<any[]>([]);
-  const [usuario, setUsuario] = useState<any>(null);
+  const [usuario, setUsuario] = useState<AuthResponse | null>(null);
   const [residuos, setResiduos] = useState<any[]>([]);
-  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
-  const [currentResiduo, setCurrentResiduo] = useState<any>(null);
-  const [form] = Form.useForm();
 
-  //=== API Methods ==//
-
+  const getResiduos = async () => {
+    if (!usuario) return;
+  
+    try {
+      const response = await axiosInstance.get(
+        `/api/Residuos?Filters=Residuos.IdUsuario%3D%3D${usuario.idUsuario}`
+      );
+      setResiduos(response.data);
+    } catch (error) {
+      console.error("Error al obtener los residuos:", error);
+    }
+  };
+  
   const getEstadosResiduos = async () => {
     try {
-      const res = await axiosInstance.get("/api/EstadoResiduos");
-      if (res.status === 200) {
-        setEstadosResiduos(res.data);
-      }
+      const response = await axiosInstance.get("/api/EstadoResiduos");
+      setEstadosResiduos(response.data);
     } catch (error) {
-      console.error("Error fetching estadosResiduos:", error);
-    }
-  };
-
-  const getResiduos = async (idUsuario: number) => {
-    try {
-      const res = await axiosInstance.get(
-        `/api/Residuos?Filters=IdUsuario%3D%3D${idUsuario}`
-      );
-      if (res.status === 200) {
-        console.log("Residuos obtenidos:", res.data);
-        setResiduos(res.data);
-      }
-    } catch (error) {
-      console.error("Error fetching residuos:", error);
-    }
-  };
-
-  const updateResiduo = async (idResiduo: number, form: FormData) => {
-    try {
-      const res = await axiosInstance.put(`/api/Residuos/${idResiduo}`, form);
-      if (res.status === 200) {
-        message.success("Residuo actualizado correctamente");
-        getResiduos(usuario.idUsuario);
-      }
-    } catch (error) {
-      console.error("Error actualizando residuo:", error);
-      message.error("No fue posible actualizar el residuo");
+      console.error("Error al obtener los estados de residuos:", error);
     }
   };
 
@@ -76,9 +53,9 @@ export default function ResiduoPage() {
     form.append("IdUsuario", usuario.idUsuario.toString());
     form.append("NombreResiduo", values.nombreResiduo);
 
-    const fechaRegistro = values.fechaRegistro;
-    if (moment(fechaRegistro).isValid()) {
-      form.append("FechaRegistro", fechaRegistro.format("YYYY-MM-DD"));
+    const fechaRegistro = values.fechaRegistro.toDate();
+    if (isValid(fechaRegistro)) {
+      form.append("FechaRegistro", format(fechaRegistro, "yyyy-MM-dd"));
     } else {
       console.error("Fecha de registro no válida");
       setLoading(false);
@@ -89,85 +66,51 @@ export default function ResiduoPage() {
     form.append("IdEstadoResiduos", values.idEstadoResiduo);
 
     try {
-      if (currentResiduo && currentResiduo.idResiduo) {
-        // Si hay un residuo actual, actualízalo
-        const res = await axiosInstance.put(
-          `/api/Residuos/${currentResiduo.idResiduo}`,
-          form
-        );
-        if (res.status === 200) {
-          message.success("Residuo actualizado correctamente");
-          getResiduos(usuario.idUsuario);
-        } else {
-          // Maneja cualquier otro código de estado aquí
-          console.error("Error actualizando residuo:", res.status, res.data);
-        }
-      } else {
-        // Si no hay un residuo actual, crea uno nuevo
-        const res = await axiosInstance.post("/api/Residuos", form);
-        if (res.status === 201) {
-          message.success("Tus residuos fueron creados");
-          getResiduos(usuario.idUsuario);
-        } else {
-          // Maneja cualquier otro código de estado aquí
-          console.error("Error creando residuo:", res.status, res.data);
-        }
-      }
-      setIsModalVisible(false); // Cierra el modal después de la creación o actualización
+      const res = await axiosInstance.post("/api/Residuos", form);
       setLoading(false);
+      if (res.status === 201) {
+        message.success("Tus residuos fueron creados");
+        getResiduos();
+      }
     } catch (err) {
-      console.error("Error manejando residuo:", err);
-      message.error("No fue posible manejar tus residuos");
+      console.log(err);
+      message.error("No fue posible registrar tus residuos");
       setLoading(false);
     }
-  };
-
-  const handleDelete = async (idResiduo: number) => {
-    try {
-      const res = await axiosInstance.delete(`/api/Residuos/${idResiduo}`);
-      if (res.status === 200) {
-        message.success("Residuo eliminado correctamente");
-        getResiduos(usuario.idUsuario);
-      }
-    } catch (error) {
-      console.error("Error eliminando residuo:", error);
-      message.error("No fue posible eliminar el residuo");
-    }
-  };
-
-  const handleEdit = (residuo: any) => {
-    setCurrentResiduo({
-      ...residuo,
-      fechaRegistro: moment(residuo.fechaRegistro), // Ensure fechaRegistro is a moment object
-    });
-    form.setFieldsValue({
-      ...residuo,
-      fechaRegistro: moment(residuo.fechaRegistro), // Set form values
-    });
-    setIsModalVisible(true);
-  };
-
-  const handleCreate = () => {
-    setCurrentResiduo(null);
-    form.resetFields();
-    setIsModalVisible(true);
   };
 
   useEffect(() => {
+  const fetchUsuarioAndResiduos = async () => {
     const usuarioCookie = Cookies.get("usuario");
-    if (usuarioCookie) setUsuario(JSON.parse(usuarioCookie));
-    getEstadosResiduos();
-  }, []);
+    if (usuarioCookie) {
+      const usuario = JSON.parse(usuarioCookie);
+      setUsuario(usuario);
 
+      try {
+        const response = await axiosInstance.get(
+          `/api/Residuos?Filters=Residuos.IdUsuario%3D%3D${usuario.idUsuario}`
+        );
+        setResiduos(response.data);
+      } catch (error) {
+        console.error("Error al obtener los residuos:", error);
+      }
+    }
+  };
+
+  fetchUsuarioAndResiduos();
+  getEstadosResiduos();
+}, []);
+
+  
   useEffect(() => {
     if (usuario) {
-      getResiduos(usuario.idUsuario);
+      getResiduos();
     }
   }, [usuario]);
 
   return (
-    <div className="w-screen h-screen flex justify-center items-center overflow-y-auto">
-      <div className="p-2 w-screen h-screen">
+    <div className="w-full h-screen flex justify-center items-center overflow-y-auto">
+      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-screen-lg">
         <h1 className="text-brown text-3xl lg:text-4xl font-extrabold">
           {usuario ? (
             "Empecemos registrando tu finca"
@@ -188,66 +131,30 @@ export default function ResiduoPage() {
           )}
         </div>
 
-        <Button type="primary" onClick={handleCreate} className="mt-4">
-          Crear Residuo
-        </Button>
-
-        {/* Lista de residuos */}
         <div className="mt-8 overflow-auto">
           <Row gutter={[16, 16]}>
             {residuos.length > 0 ? (
-              residuos
-                .filter((residuo) => residuo.idUsuario === usuario.idUsuario)
-                .map((residuo) => (
-                  <Col xs={24} sm={12} md={8} lg={6} key={residuo.idResiduos}>
-                    <Card title={residuo.nombreResiduo} bordered={false}>
-                      <p>Fecha de Registro: {residuo.fechaRegistro}</p>
-                      <p>Cantidad Registrada: {residuo.cantidadRegistrada}</p>
-                      <p>
-                        Estado:{" "}
-                        {residuo.estadoResiduos
-                          ? residuo.estadoResiduos.nombreEstadoResiduos
-                          : "No se ha asignado un estado"}
-                      </p>
-                      <Button onClick={() => handleEdit(residuo)}>
-                        Modificar
-                      </Button>
-                      <Button
-                        onClick={() => handleDelete(residuo.idResiduos)}
-                        danger
-                      >
-                        Eliminar
-                      </Button>
-                    </Card>
-                  </Col>
-                ))
+              residuos.map((residuo) => (
+                <Col xs={24} sm={12} md={8} lg={6} key={residuo.idResiduo}>
+                  <Card title={residuo.nombreResiduo} bordered={false}>
+                    <p>Fecha de Registro: {residuo.fechaRegistro}</p>
+                    <p>Cantidad Registrada: {residuo.cantidadRegistrada}</p>
+                    <p>Estado: {residuo.estadoResiduoNombre}</p>
+                  </Card>
+                </Col>
+              ))
             ) : (
               <p>No hay residuos registrados.</p>
             )}
           </Row>
         </div>
 
-        <Modal
-          title={currentResiduo ? "Modificar Residuo" : "Crear Residuo"}
-          visible={isModalVisible}
-          onCancel={() => setIsModalVisible(false)}
-          footer={null}
-        >
+        {usuario && (
           <Form
             name="onboarding"
             layout="vertical"
             onFinish={onFinish}
-            form={form}
-            initialValues={
-              currentResiduo
-                ? {
-                    ...currentResiduo,
-                    fechaRegistro: currentResiduo.fechaRegistro
-                      ? moment(currentResiduo.fechaRegistro)
-                      : null,
-                  }
-                : {}
-            }
+            className="mt-8"
           >
             <Form.Item
               label="Nombre del residuo"
@@ -312,11 +219,11 @@ export default function ResiduoPage() {
 
             <Form.Item>
               <Button type="primary" htmlType="submit" loading={loading} block>
-                {currentResiduo ? "Modificar" : "Registrar"}
+                Registrar
               </Button>
             </Form.Item>
           </Form>
-        </Modal>
+        )}
       </div>
     </div>
   );
