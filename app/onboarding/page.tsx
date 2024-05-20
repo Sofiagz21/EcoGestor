@@ -18,6 +18,7 @@ export default function OnboardingPage() {
   const [isGameAccountReady, setIsGameAccountReady] = useState<boolean | null>(
     null
   );
+  
 
   const router = useRouter(); // Initialize the router
 

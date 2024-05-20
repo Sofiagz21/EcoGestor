@@ -2,7 +2,7 @@ interface Residuo{
     nombreResiduo: string,
     fechaRegistro: Date,
     cantidadRegistrada: string,
-    idEstadoResiduo?: number,
+    idEstadoResiduo: number,
 }
 
 
@@ -13,3 +13,6 @@ interface ResiduoResponse extends Residuo{
     usuario: UsuarioResponse,
 }
 
+interface ResiduoView extends ResiduoResponse{
+    usuarios: UsuarioResponse[],
+}
