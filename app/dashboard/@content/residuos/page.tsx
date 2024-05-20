@@ -25,6 +25,8 @@ export default function ResiduoPage() {
   const [usuario, setUsuario] = useState<any>(null);
   const [residuos, setResiduos] = useState<any[]>([]);
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+  const [isUpdateModalVisible, setIsUpdateModalVisible] =
+    useState<boolean>(false);
   const [currentResiduo, setCurrentResiduo] = useState<any>(null);
   const [form] = Form.useForm();
 
@@ -68,7 +70,7 @@ export default function ResiduoPage() {
     }
   };
 
-  const updateResiduo = async (idResiduo: number, form: FormData) => {
+  const updateResiduoAPI = async (idResiduo: number, form: FormData) => {
     try {
       const res = await axiosInstance.put(`/api/Residuos/${idResiduo}`, form);
       if (res.status === 200) {
@@ -82,12 +84,26 @@ export default function ResiduoPage() {
     }
   };
 
-  const onFinish = async (values: any) => {
+  const handleDelete = async (idResiduo: number) => {
+    try {
+      await axiosInstance.delete(`/api/Residuos/${idResiduo}`);
+      message.success("Residuo eliminado correctamente");
+      getResiduos(usuario.idUsuario);
+    } catch (error) {
+      console.error("Error eliminando residuo:", error);
+      message.error("No fue posible eliminar el residuo");
+    }
+  };
+
+  const onFinishCreate = async (values: any) => {
     if (!usuario) return;
 
     setLoading(true);
     const form: FormData = new FormData();
-    form.append("IdUsuario", usuario.idUsuario.toString());
+    form.append(
+      "IdUsuario",
+      usuario.idUsuario ? usuario.idUsuario.toString() : ""
+    );
     form.append("NombreResiduo", values.nombreResiduo);
 
     const fechaRegistro = values.fechaRegistro;
@@ -103,37 +119,51 @@ export default function ResiduoPage() {
     form.append("IdEstadoResiduos", values.idEstadoResiduo);
 
     try {
-      console.log(
-        "onFinish called",
-        form,
-        currentResiduo,
-        currentResiduo ? currentResiduo.idResiduo : "No currentResiduo"
-      );
-      if (currentResiduo && currentResiduo.idResiduo) {
-        // Si hay un residuo actual, actualízalo
-        form.append("idResiduo", currentResiduo.idResiduo.toString()); // Asegúrate de enviar el ID del residuo existente
-        await updateResiduo(currentResiduo.idResiduo, form);
-      } else {
-        // Si no hay un residuo actual, crea uno nuevo
-        await createResiduo(form);
-      }
-      setIsModalVisible(false); // Cierra el modal después de la creación o actualización
+      await createResiduo(form);
+      setIsModalVisible(false); // Cierra el modal después de la creación
       setLoading(false);
     } catch (err) {
-      console.error("Error manejando residuo:", err);
+      console.error("Error creando residuo:", err);
       message.error("No fue posible manejar tus residuos");
       setLoading(false);
     }
   };
 
-  const handleDelete = async (idResiduo: number) => {
+  const onFinishUpdate = async (values: any) => {
+    if (!usuario || !currentResiduo) return;
+
+    setLoading(true);
+    const form: FormData = new FormData();
+    form.append(
+      "IdUsuario",
+      usuario.idUsuario ? usuario.idUsuario.toString() : ""
+    );
+    form.append("NombreResiduo", values.nombreResiduo);
+
+    const fechaRegistro = values.fechaRegistro;
+    if (moment(fechaRegistro).isValid()) {
+      form.append("FechaRegistro", fechaRegistro.format("YYYY-MM-DD"));
+    } else {
+      console.error("Fecha de registro no válida");
+      setLoading(false);
+      return;
+    }
+
+    form.append("CantidadRegistrada", values.cantidadRegistrada);
+    form.append("IdEstadoResiduos", values.idEstadoResiduo);
+
     try {
-      await axiosInstance.delete(`/api/Residuos/${idResiduo}`);
-      message.success("Residuo eliminado correctamente");
-      getResiduos(usuario.idUsuario);
-    } catch (error) {
-      console.error("Error eliminando residuo:", error);
-      message.error("No fue posible eliminar el residuo");
+      form.append(
+        "idResiduo",
+        currentResiduo.idResiduo ? currentResiduo.idResiduo.toString() : ""
+      ); // Asegúrate de enviar el ID del residuo existente
+      await updateResiduoAPI(currentResiduo.idResiduo, form);
+      setIsUpdateModalVisible(false); // Cierra el modal después de la actualización
+      setLoading(false);
+    } catch (err) {
+      console.error("Error actualizando residuo:", err);
+      message.error("No fue posible actualizar el residuo");
+      setLoading(false);
     }
   };
 
@@ -146,18 +176,13 @@ export default function ResiduoPage() {
       ...residuo,
       fechaRegistro: moment(residuo.fechaRegistro), // Set form values
     });
-    setIsModalVisible(true);
+    setIsUpdateModalVisible(true); // Cambia la visibilidad del modal de actualización
   };
 
   const handleCreate = () => {
     setCurrentResiduo(null);
     form.resetFields();
     setIsModalVisible(true);
-  };
-
-  const onModifyButtonClick = (residuo: any) => {
-    console.log(residuo);
-    // Aquí va el resto de tu lógica para modificar el residuo
   };
 
   useEffect(() => {
@@ -237,16 +262,99 @@ export default function ResiduoPage() {
           </Row>
         </div>
 
+        {/* Modal de creación */}
         <Modal
-          title={currentResiduo ? "Modificar Residuo" : "Crear Residuo"}
+          title="Crear Residuo"
           visible={isModalVisible}
           onCancel={() => setIsModalVisible(false)}
           footer={null}
         >
           <Form
-            name="onboarding"
+            name="createResiduo"
             layout="vertical"
-            onFinish={onFinish}
+            onFinish={onFinishCreate}
+            form={form}
+          >
+            <Form.Item
+              label="Nombre del residuo"
+              name="nombreResiduo"
+              rules={[
+                {
+                  required: true,
+                  message: "Por favor ingresa el nombre del residuo",
+                },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+
+            <Form.Item
+              label="Fecha de Registro"
+              name="fechaRegistro"
+              rules={[
+                {
+                  required: true,
+                  message: "Por favor ingresa la fecha de registro",
+                },
+              ]}
+            >
+              <DatePicker />
+            </Form.Item>
+
+            <Form.Item
+              label="Cantidad Registrada"
+              name="cantidadRegistrada"
+              rules={[
+                {
+                  required: true,
+                  message: "Por favor ingresa la cantidad registrada",
+                },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+
+            <Form.Item
+              label="Estado del residuo"
+              name="idEstadoResiduo"
+              rules={[
+                {
+                  required: true,
+                  message: "Por favor selecciona el estado del residuo",
+                },
+              ]}
+            >
+              <Select>
+                {estadosResiduos.map((estado) => (
+                  <Select.Option
+                    key={estado.idEstadoResiduos}
+                    value={estado.idEstadoResiduos}
+                  >
+                    {estado.nombreEstadoResiduos}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item>
+              <Button type="primary" htmlType="submit" loading={loading} block>
+                Registrar
+              </Button>
+            </Form.Item>
+          </Form>
+        </Modal>
+
+        {/* Modal de actualización */}
+        <Modal
+          title="Modificar Residuo"
+          visible={isUpdateModalVisible}
+          onCancel={() => setIsUpdateModalVisible(false)}
+          footer={null}
+        >
+          <Form
+            name="updateResiduo"
+            layout="vertical"
+            onFinish={onFinishUpdate}
             form={form}
             initialValues={
               currentResiduo
@@ -321,18 +429,8 @@ export default function ResiduoPage() {
             </Form.Item>
 
             <Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={loading}
-                block
-                onClick={() => {
-                  if (currentResiduo) {
-                    console.log(currentResiduo);
-                  }
-                }}
-              >
-                {currentResiduo ? "Modificar" : "Registrar"}
+              <Button type="primary" htmlType="submit" loading={loading} block>
+                Modificar
               </Button>
             </Form.Item>
           </Form>
