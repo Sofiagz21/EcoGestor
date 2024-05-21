@@ -30,13 +30,13 @@ export default function DashboardLayout(props: {
       key: "2",
       icon: <GiFarmTractor size="25" fill="#162504" className="mb-2" />,
       title: "Ruta de Residuos",
-      url: "/ruta-residuos",
+      url: "/rutasResiduos",
     },
     {
       key: "3",
       icon: <GiPencil size="25" fill="#162504" className="mb-2" />,
       title: "Control de Calidad",
-      url: "/control-calidad",
+      url: "/controlCalidad",
     },
     {
       key: "4",

@@ -49,16 +49,20 @@ export default function ResiduoPage() {
 
   const getResiduos = async (idUsuario: number) => {
     try {
-      const res = await axiosInstance.get(
-        `/api/Residuos?Filters=IdUsuario%3D%3D${idUsuario}`
-      );
-      if (res.status === 200) {
-        setResiduos(res.data);
-      }
+        const url = `/api/Residuos?Filters=IdUsuario%3D%3D${idUsuario}`;
+        console.log("Fetching URL:", url);
+
+        const res = await axiosInstance.get(url);
+        
+        console.log("Response status:", res.status);
+        if (res.status === 200) {
+            console.log("Response data:", res.data);
+            setResiduos(res.data);
+        }
     } catch (error) {
-      console.error("Error fetching residuos:", error);
+        console.error("Error fetching residuos:", error);
     }
-  };
+};
 
   const createResiduo = async (form: FormData) => {
     try {
