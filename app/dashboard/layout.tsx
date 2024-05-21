@@ -49,6 +49,7 @@ export default function DashboardLayout(props: {
   const handleToggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
+  
 
   const handleMenuItemClick = (item: { key: string; url: string }) => {
     setCurrentActive(item.key);
@@ -60,7 +61,7 @@ export default function DashboardLayout(props: {
     <div className="h-screen overflow-y-hidden bg-gray-100">
       <div className="h-full w-full flex flex-col lg:flex-row">
         <div
-          className={`sidebar lg:static z-50 lg:z-auto top-0 left-0 h-full w-64 lg:w-1/5 bg-gray-100 border-r-2 ${
+          className={`sidebar fixed lg:static z-50 lg:z-auto top-0 left-0 h-full w-64 lg:w-1/5 bg-gray-100 border-r-2 ${
             isSidebarOpen ? "sidebar-open" : ""
           }`}
           style={{ borderColor: "#515151" }}
@@ -106,10 +107,7 @@ export default function DashboardLayout(props: {
           </Menu>
         </div>
         <div className="w-full lg:w-4/5 bg-white">
-          <TopBar
-            handleToggleSidebar={handleToggleSidebar}
-            isSidebarOpen={isSidebarOpen}
-          />
+          <TopBar />
           {props.content}
         </div>
       </div>

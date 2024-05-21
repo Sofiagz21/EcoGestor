@@ -9,14 +9,8 @@ import { Menu } from "antd"; // Importa Menu desde antd
 import { Avatar, Dropdown } from "antd";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { FiX, FiMenu } from "react-icons/fi";
 
-interface TopBarProps {
-  handleToggleSidebar: () => void;
-  isSidebarOpen: boolean;
-}
-
-export default function TopBar({ handleToggleSidebar, isSidebarOpen }: TopBarProps) {
+export default function TopBar() {
   const pathname = usePathname();
 
   const [usuario, setUsuario] = useState<AuthResponse | null>(null);
@@ -40,14 +34,10 @@ export default function TopBar({ handleToggleSidebar, isSidebarOpen }: TopBarPro
     }
   };
 
-
   return (
     <header className="w-full flex justify-between items-center px-4 py-3 lg:px-8 lg:py-4 bg-gray-50 lg:bg-white text-brown border-b border-secondary-green/15">
       <div className="flex items-center">
         <div className="lg:hidden">
-          <button onClick={handleToggleSidebar}>
-            {isSidebarOpen ? <FiX size={30} /> : <FiMenu size={30} />}
-          </button>
           <Image src={Logo} alt="EcoGestorLogo" height={28} />
         </div>
         <div
