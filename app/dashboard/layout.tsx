@@ -9,7 +9,8 @@ import { FiMenu, FiX } from "react-icons/fi";
 import Logo from "@/public/img/LogoEcogestor.svg";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import React, { useState, useCallback } from 'react';
+
 
 export default function DashboardLayout(props: {
   children: React.ReactNode;
@@ -46,9 +47,9 @@ export default function DashboardLayout(props: {
     },
   ];
 
-  const handleToggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
+  const handleToggleSidebar = useCallback(() => {
+    setIsSidebarOpen((prevIsSidebarOpen) => !prevIsSidebarOpen);
+  }, []);
 
   const handleMenuItemClick = (item: { key: string; url: string }) => {
     setCurrentActive(item.key);
@@ -106,10 +107,7 @@ export default function DashboardLayout(props: {
           </Menu>
         </div>
         <div className="w-full lg:w-4/5 bg-white">
-          <TopBar
-            handleToggleSidebar={handleToggleSidebar}
-            isSidebarOpen={isSidebarOpen}
-          />
+          <TopBar handleToggleSidebar={handleToggleSidebar} isSidebarOpen={isSidebarOpen} />
           {props.content}
         </div>
       </div>

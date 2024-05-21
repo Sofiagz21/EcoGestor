@@ -18,7 +18,6 @@ export default function OnboardingPage() {
   const [isGameAccountReady, setIsGameAccountReady] = useState<boolean | null>(
     null
   );
-  
 
   const router = useRouter(); // Initialize the router
 
@@ -114,16 +113,18 @@ export default function OnboardingPage() {
             <Card
               hoverable
               style={{ backgroundColor: "#EFFBE0" }}
-              className="text-center rounded-md shadow-md h-[240px] flex flex-col justify-center items-center p-4"
+              className="text-center rounded-md shadow-md h-[260px] flex flex-col justify-center items-center p-5"
               onClick={() => router.push("/dashboard/residuos")} // Add the onClick handler
             >
-              <CheckCircleOutlined
-                style={{
-                  fontSize: "3rem",
-                  color: "#659e25",
-                  marginBottom: "1rem",
-                }}
-              />
+              <div className="flex justify-center items-center">
+                <CheckCircleOutlined
+                  style={{
+                    fontSize: "3rem",
+                    color: "#659e25",
+                    marginBottom: "1rem",
+                  }}
+                />
+              </div>
               <h4 className="text-lg font-bold mt-2 mb-1 text-dark-blue">
                 Registrar residuos
               </h4>
