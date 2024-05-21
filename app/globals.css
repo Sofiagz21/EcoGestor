@@ -1,18 +1,15 @@
-
 @tailwind components;
 @tailwind utilities;
-@import url('https://fonts.googleapis.com/css2?family=Nunito&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Nunito&display=swap");
 
 /*Select cards*/
 
-*{
+* {
   border: 0;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
-
-
 
 .radio-custom .ant-radio-wrapper {
   border: 2px solid #ccc;
@@ -38,4 +35,31 @@
   overflow: hidden;
   border-radius: 8px;
   overflow: hidden;
+}
+.sidebar {
+  display: block;
+  width: 250px; /* Ajusta esto a la anchura que desees para el sidebar */
+  height: 100vh; /* Esto hará que el sidebar tenga la misma altura que la ventana del navegador */
+  transition: transform 0.3s ease-in-out;
+}
+
+.sidebar-open {
+  transform: translateX(0);
+}
+
+.toggle-button {
+  display: none;
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+}
+
+@media (max-width: 1024px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+
+  .toggle-button {
+    display: flex;
+  }
 }

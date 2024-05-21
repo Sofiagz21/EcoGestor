@@ -8,7 +8,7 @@ import { TbSettingsFilled } from "react-icons/tb";
 import { FiMenu, FiX } from "react-icons/fi";
 import Logo from "@/public/img/LogoEcogestor.svg";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function DashboardLayout(props: {
@@ -16,7 +16,6 @@ export default function DashboardLayout(props: {
   content: React.ReactNode;
 }) {
   const router = useRouter();
-  const pathname = usePathname();
   const [currentActive, setCurrentActive] = useState<string>("1");
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
 
@@ -61,19 +60,19 @@ export default function DashboardLayout(props: {
     <div className="h-screen overflow-y-hidden bg-gray-100">
       <div className="h-full w-full flex flex-col lg:flex-row">
         <div
-          className={`fixed lg:static z-50 lg:z-auto top-0 left-0 h-full w-64 lg:w-1/6 bg-gray-100 border-r-2 transition-transform duration-300 ease-in-out ${
-            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          className={`sidebar lg:block hidden z-50 top-0 left-0 h-full w-64 lg:w-1/5 bg-gray-100 border-r-2 ${
+            isSidebarOpen ? "block" : "hidden"
           }`}
           style={{ borderColor: "#515151" }}
         >
-          <div className="flex justify-between items-center p-4 lg:hidden">
+          <div className="flex justify-between items-center p-4 lg:hidden toggle-button">
             <Image src={Logo} alt="Tabi Logo" height={40} />
             <button onClick={handleToggleSidebar}>
               {isSidebarOpen ? <FiX size={30} /> : <FiMenu size={30} />}
             </button>
           </div>
-          <div className="hidden lg:flex mx-2 lg:mx-6 my-2">
-            <Image src={Logo} alt="Tabi Logo" height={50} />
+          <div className="hidden lg:flex mx-2 lg:mx-6 my-2 sidebar-logo">
+            <Image src={Logo} alt="EcoGestor" height={50} />
           </div>
           <Menu
             defaultSelectedKeys={["1"]}
@@ -106,8 +105,11 @@ export default function DashboardLayout(props: {
             ))}
           </Menu>
         </div>
-        <div className="w-full lg:w-5/6 bg-white">
-          <TopBar />
+        <div className="w-full lg:w-4/5 bg-white">
+          <TopBar
+            handleToggleSidebar={handleToggleSidebar}
+            isSidebarOpen={isSidebarOpen}
+          />
           {props.content}
         </div>
       </div>

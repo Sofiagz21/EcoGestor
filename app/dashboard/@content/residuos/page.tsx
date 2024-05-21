@@ -18,6 +18,9 @@ import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
 import axiosInstance from "@/axiosInterceptor";
 import moment from "moment";
+//icons
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus, faTrash, faEdit } from "@fortawesome/free-solid-svg-icons";
 
 export default function ResiduoPage() {
   const [loading, setLoading] = useState<boolean>(false);
@@ -29,6 +32,7 @@ export default function ResiduoPage() {
     useState<boolean>(false);
   const [currentResiduo, setCurrentResiduo] = useState<any>(null);
   const [form] = Form.useForm();
+  const [formInstance] = Form.useForm();
 
   //=== API Methods ==//
 
@@ -49,7 +53,6 @@ export default function ResiduoPage() {
         `/api/Residuos?Filters=IdUsuario%3D%3D${idUsuario}`
       );
       if (res.status === 200) {
-        console.log("Residuos obtenidos:", res.data);
         setResiduos(res.data);
       }
     } catch (error) {
@@ -62,25 +65,31 @@ export default function ResiduoPage() {
       const res = await axiosInstance.post("/api/Residuos", form);
       if (res.status === 201) {
         message.success("Tus residuos fueron creados");
-        getResiduos(usuario.idUsuario);
+        await getResiduos(usuario.idUsuario); // Asegúrate de obtener los residuos actualizados
+        setIsModalVisible(false); // Cierra el modal después de la creación
       }
     } catch (error) {
       console.error("Error creando residuo:", error);
       message.error("No fue posible crear el residuo");
+    } finally {
+      setLoading(false); // Asegúrate de desactivar el estado de carga
     }
   };
 
-  const updateResiduoAPI = async (idResiduo: number, form: FormData) => {
+  const updateResiduoAPI = async (form: FormData) => {
     try {
-      const res = await axiosInstance.put(`/api/Residuos/${idResiduo}`, form);
+      const res = await axiosInstance.put(`/api/Residuos/`, form);
       if (res.status === 200) {
         message.success("Residuo actualizado correctamente");
-        getResiduos(usuario.idUsuario);
-        setCurrentResiduo(null); // Clear currentResiduo after updating
+        await getResiduos(usuario.idUsuario); // Asegúrate de obtener los residuos actualizados
+        setIsUpdateModalVisible(false); // Cierra el modal después de la actualización
+        setCurrentResiduo(null); // Limpia currentResiduo después de actualizar
       }
     } catch (error) {
       console.error("Error actualizando residuo:", error);
       message.error("No fue posible actualizar el residuo");
+    } finally {
+      setLoading(false); // Asegúrate de desactivar el estado de carga
     }
   };
 
@@ -120,8 +129,8 @@ export default function ResiduoPage() {
 
     try {
       await createResiduo(form);
-      setIsModalVisible(false); // Cierra el modal después de la creación
-      setLoading(false);
+      setCurrentResiduo(null); // Limpia currentResiduo después de actualizar
+      formInstance.resetFields(); // Restablece los campos del formulario
     } catch (err) {
       console.error("Error creando residuo:", err);
       message.error("No fue posible manejar tus residuos");
@@ -153,13 +162,17 @@ export default function ResiduoPage() {
     form.append("IdEstadoResiduos", values.idEstadoResiduo);
 
     try {
-      form.append(
-        "idResiduo",
-        currentResiduo.idResiduo ? currentResiduo.idResiduo.toString() : ""
-      ); // Asegúrate de enviar el ID del residuo existente
-      await updateResiduoAPI(currentResiduo.idResiduo, form);
-      setIsUpdateModalVisible(false); // Cierra el modal después de la actualización
-      setLoading(false);
+      if (currentResiduo.idResiduo) {
+        form.append("IdResiduo", currentResiduo.idResiduo.toString());
+      } else {
+        console.error(
+          "currentResiduo.idResiduo es inválido:",
+          currentResiduo.idResiduo
+        );
+        setLoading(false);
+        return;
+      }
+      await updateResiduoAPI(form);
     } catch (err) {
       console.error("Error actualizando residuo:", err);
       message.error("No fue posible actualizar el residuo");
@@ -176,7 +189,7 @@ export default function ResiduoPage() {
       ...residuo,
       fechaRegistro: moment(residuo.fechaRegistro), // Set form values
     });
-    setIsUpdateModalVisible(true); // Cambia la visibilidad del modal de actualización
+    setIsUpdateModalVisible(true);
   };
 
   const handleCreate = () => {
@@ -187,7 +200,6 @@ export default function ResiduoPage() {
 
   useEffect(() => {
     const usuarioCookie = Cookies.get("usuario");
-    console.log("Usuario Cookie:", usuarioCookie);
     if (usuarioCookie) setUsuario(JSON.parse(usuarioCookie));
     getEstadosResiduos();
   }, []);
@@ -199,60 +211,106 @@ export default function ResiduoPage() {
   }, [usuario]);
 
   return (
-    <div className="w-screen h-screen flex justify-center items-center overflow-y-auto">
-      <div className="p-2 w-screen h-screen">
-        <h1 className="text-brown text-3xl lg:text-4xl font-extrabold">
+    <div className="flex items-center overflow-y-auto">
+      <div className="p-3 h-screen box-border">
+        <h1 className="text-green text-3xl lg:text-4xl font-extrabold">
           {usuario ? (
-            "Empecemos registrando tu finca"
+            "🌱 ¡Bienvenido a la gestión de residuos!"
           ) : (
             <Skeleton.Input block active />
           )}
         </h1>
-        <div className="text-brown text-sm lg:text-base">
+        <div className="mt-4 text-gray text-sm lg:text-base">
           {usuario && (
             <>
-              Agrega a continuación los datos de tu finca para comenzar a usar
-              la plataforma.&nbsp;
-              <b>
-                Podrás cambiar la información o agregar más fincas
-                posteriormente.
-              </b>
+              Aquí puedes registrar todos los residuos de tu finca. Esta
+              información nos ayudará a optimizar la gestión de residuos y a
+              mejorar el medio ambiente. Recuerda, cada pequeño paso cuenta para
+              un futuro más verde.
+              <p className="mt-2 text-green">
+                {" "}
+                <b>
+                  Puedes editar o agregar más registros en cualquier momento.
+                </b>
+              </p>
             </>
           )}
         </div>
 
-        <Button type="primary" onClick={handleCreate} className="mt-4">
-          Crear Residuo
+        <Button type="primary" onClick={handleCreate} className="mt-4 ml-auto">
+          <FontAwesomeIcon icon={faPlus} className="mr-2" /> Crear Residuo
         </Button>
 
-        {/* Lista de residuos */}
-        <div className="mt-8 overflow-auto">
+        <div
+          className="mt-8 overflow-auto"
+          style={{ width: "100%", height: "100%" }}
+        >
           <Row gutter={[16, 16]}>
             {residuos.length > 0 ? (
               residuos
                 .filter((residuo) => residuo.idUsuario === usuario.idUsuario)
                 .map((residuo) => (
-                  <Col xs={24} sm={12} md={8} lg={6} key={residuo.idResiduos}>
-                    <Card title={residuo.nombreResiduo} bordered={false}>
-                      <p>Fecha de Registro: {residuo.fechaRegistro}</p>
-                      <p>Cantidad Registrada: {residuo.cantidadRegistrada}</p>
-                      <p>
-                        Estado:{" "}
-                        {residuo.estadoResiduos
-                          ? residuo.estadoResiduos.nombreEstadoResiduos
-                          : "No se ha asignado un estado"}
+                  <Col xs={24} sm={12} md={8} lg={8} key={residuo.idResiduo}>
+                    <Card
+                      title={
+                        <span style={{ color: "green" }}>
+                          {residuo.nombreResiduo}
+                        </span>
+                      }
+                      bordered={true}
+                      style={{ borderColor: "#8AC942" }}
+                    >
+                      <p style={{ color: "green" }}>
+                        <strong>📅 Fecha de Registro:</strong>{" "}
+                        <span style={{ color: "#000" }}>
+                          {residuo.fechaRegistro}
+                        </span>
                       </p>
-                      <Button onClick={() => handleEdit(residuo)}>
-                        Modificar
-                      </Button>
-                      <Popconfirm
-                        title="¿Estás seguro de eliminar este residuo?"
-                        onConfirm={() => handleDelete(residuo.idResiduos)}
-                        okText="Sí"
-                        cancelText="Cancelar"
-                      >
-                        <Button danger>Eliminar</Button>
-                      </Popconfirm>
+                      <p style={{ color: "green" }}>
+                        <strong>📊 Cantidad Registrada:</strong>{" "}
+                        <span style={{ color: "#000" }}>
+                          {residuo.cantidadRegistrada}
+                        </span>
+                      </p>
+                      <p style={{ color: "green" }}>
+                        <strong>✅ Estado:</strong>{" "}
+                        <span style={{ color: "#000" }}>
+                          {residuo.estadoResiduos
+                            ? residuo.estadoResiduos.nombreEstadoResiduos
+                            : "No se ha asignado un estado"}
+                        </span>
+                      </p>
+                      <div className="flex justify-between mt-3">
+                        <Button
+                          onClick={() => handleEdit(residuo)}
+                          style={{
+                            backgroundColor: "#8AC942",
+                            borderColor: "#8AC942",
+                            color: "white",
+                          }}
+                        >
+                          <FontAwesomeIcon icon={faEdit} className="mr-2" />
+                          Modificar
+                        </Button>
+                        <Popconfirm
+                          title="¿Estás seguro de eliminar este residuo?"
+                          onConfirm={() => handleDelete(residuo.idResiduo)}
+                          okText="Sí"
+                          cancelText="Cancelar"
+                        >
+                          <Button
+                            danger
+                            style={{
+                              backgroundColor: "#FA6464",
+                              borderColor: "#FA6464",
+                              color: "white",
+                            }}
+                          >
+                            <FontAwesomeIcon icon={faTrash} className="mr-2" />
+                            Eliminar
+                          </Button>
+                        </Popconfirm>
+                      </div>
                     </Card>
                   </Col>
                 ))
@@ -262,7 +320,6 @@ export default function ResiduoPage() {
           </Row>
         </div>
 
-        {/* Modal de creación */}
         <Modal
           title="Crear Residuo"
           visible={isModalVisible}
@@ -273,7 +330,7 @@ export default function ResiduoPage() {
             name="createResiduo"
             layout="vertical"
             onFinish={onFinishCreate}
-            form={form}
+            form={formInstance}
           >
             <Form.Item
               label="Nombre del residuo"
@@ -344,7 +401,6 @@ export default function ResiduoPage() {
           </Form>
         </Modal>
 
-        {/* Modal de actualización */}
         <Modal
           title="Modificar Residuo"
           visible={isUpdateModalVisible}
