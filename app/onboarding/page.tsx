@@ -21,60 +21,6 @@ export default function OnboardingPage() {
 
   const router = useRouter(); // Initialize the router
 
-  const checkPlayerPartida = async () => {
-    if (!usuario) return;
-    console.log("Checking player partida");
-    try {
-      const response = await axiosInstance.get(
-        `/api/Partida?Filters=Partida.IdUsuario%3D%3D${usuario.idUsuario}`
-      );
-      if (response.data.length > 0) {
-        console.log("Player has a partida");
-        setGameHasPartida(true);
-        setIsGameAccountReady(true); // La cuenta del juego está lista si el jugador ya tiene una partida
-      } else {
-        setGameHasPartida(false);
-        setIsGameAccountReady(false);
-        SetPlayerAccount(); // Crear una nueva partida si el jugador no tiene una partida
-      }
-    } catch (error) {
-      console.error("Error checking player partida:", error);
-      setGameHasPartida(false);
-      setIsGameAccountReady(false);
-    }
-  };
-
-  const SetPlayerAccount = async () => {
-    if (!usuario) return;
-    const formPartida = new FormData();
-    formPartida.append("IdUsuario", usuario.idUsuario.toString());
-    formPartida.append("Name", "Granjero de Green Peel Adventure");
-
-    try {
-      const resp = await axiosInstance.post("/api/Partida", formPartida);
-      if (resp.status === 201) {
-        console.log("Partida Creada", resp.data);
-        // Ahora que la partida está creada, también la cuenta del juego está lista
-        setIsGameAccountReady(true);
-        // Agregar lógica para crear un lote u otros detalles de la cuenta del juego aquí
-      }
-    } catch (err) {
-      console.error("Error creating partida:", err);
-      setIsGameAccountReady(false);
-    }
-  };
-
-  function handleRegisterWaste() {
-    // Aquí va el código para manejar el registro de residuos
-  }
-
-  function handleRegisterWasteRoute() {
-    // Aquí va el código para manejar el registro de una ruta de residuos
-  }
-
-  function handleRegisterQualityControl() {
-    // Aquí va el código para manejar el registro de un control de calidad
-  }
 
   useEffect(() => {
     // Set user cookies
@@ -85,8 +31,6 @@ export default function OnboardingPage() {
   useEffect(() => {
     if (usuario) {
       console.log(usuario);
-      // check if player has a partida
-      checkPlayerPartida();
     }
   }, [usuario]);
 
@@ -114,7 +58,7 @@ export default function OnboardingPage() {
               hoverable
               style={{ backgroundColor: "#EFFBE0" }}
               className="text-center rounded-md shadow-md h-[260px] flex flex-col justify-center items-center p-5"
-              onClick={() => router.push("/dashboard/residuos")} // Add the onClick handler
+              onClick={() => router.push("/dashboard/residuos")} 
             >
               <div className="flex justify-center items-center">
                 <CheckCircleOutlined
@@ -136,6 +80,7 @@ export default function OnboardingPage() {
               hoverable
               style={{ backgroundColor: "#EFFBE0" }}
               className="text-center rounded-md shadow-md h-[240px] flex flex-col justify-center items-center p-4"
+              onClick={() => router.push("/dashboard/rutasResiduos")} 
             >
               <EnvironmentOutlined
                 style={{
@@ -155,6 +100,7 @@ export default function OnboardingPage() {
               hoverable
               style={{ backgroundColor: "#EFFBE0" }}
               className="text-center rounded-md shadow-md h-[240px] flex flex-col justify-center items-center p-4"
+              onClick={() => router.push("/dashboard/controlCalidad")} 
             >
               <SafetyOutlined
                 style={{
@@ -176,7 +122,7 @@ export default function OnboardingPage() {
 
       {usuario &&
         usuario.idRolUsuario === 2 &&
-        (gameHasPartida || isGameAccountReady) && (
+         (
           <div className="w-full flex justify-center items-center mt-10">
             <Card
               hoverable
@@ -210,23 +156,6 @@ export default function OnboardingPage() {
                 🎉 ¡Diviértete y disfruta de la aventura! 🌱
               </p>
             </Card>
-          </div>
-        )}
-
-      {usuario &&
-        usuario.idRolUsuario === 2 &&
-        gameHasPartida === false &&
-        isGameAccountReady === false && (
-          <div className="w-full max-w-3xl text-center mt-10">
-            <h1
-              className="text-3xl lg:text-4xl font-extrabold"
-              style={{ color: "#659E25" }}
-            >
-              Estamos configurando tu cuenta...
-            </h1>
-            <div className="text-sm lg:text-base" style={{ color: "#659E25" }}>
-              Este proceso sólo tomará un momento
-            </div>
           </div>
         )}
     </div>

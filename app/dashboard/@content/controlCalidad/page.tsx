@@ -266,7 +266,11 @@ export default function ControlCalidadPage() {
         <div className="mt-4 text-gray text-sm lg:text-base">
           {usuario && (
             <>
-              Aquí puedes gestionar el control de calidad de los residuos.
+              Aquí puedes registrar y gestionar todos los controles de calidad
+              de los residuos generados en tu finca. Esta información nos
+              permitirá asegurar que los residuos sean manejados de manera
+              efectiva y segura, contribuyendo a un entorno más saludable y
+              sostenible.
               <p className="mt-2 text-green">
                 <b>
                   Puedes editar o agregar más controles de calidad en cualquier

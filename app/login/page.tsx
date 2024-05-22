@@ -73,7 +73,8 @@ export default function LoginPage() {
         setLoginErrorVisible(false);
         setRegisterErrorVisible(false);
 
-        window.location.href = "/dashboard";
+        //window.location.href = "/dashboard";
+        window.location.href = "/onboarding";
       }
     } catch (error: any) {
       const { response } = error;
