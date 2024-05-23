@@ -234,9 +234,9 @@ export default function ControlCalidadPage() {
   };
 
   const handleCreate = () => {
-    setCurrentControlCalidad(null);
+    console.log("handleCreate called");
+    console.log("Opening create modal");
     form.resetFields();
-    setSelectedMetodoControl(null); // Clear the selected method when creating
     setIsModalVisible(true);
   };
 
@@ -337,110 +337,6 @@ export default function ControlCalidadPage() {
                         </span>
                       </p>
 
-                      <Modal
-                        title="Crear Control de Calidad"
-                        visible={isModalVisible}
-                        onCancel={() => setIsModalVisible(false)}
-                        footer={null}
-                      >
-                        <Form
-                          name="createControlCalidad"
-                          layout="vertical"
-                          onFinish={onFinishCreate}
-                          form={formInstance}
-                        >
-                          {/*Residuo*/}
-                          <Form.Item
-                            label="Residuo"
-                            name="idResiduo"
-                            rules={[
-                              {
-                                required: true,
-                                message:
-                                  "Por favor selecciona el estado el residuo",
-                              },
-                            ]}
-                          >
-                            <Select>
-                              {residuos.map((residuo) => (
-                                <Select.Option
-                                  key={residuo.idResiduo}
-                                  value={residuo.idResiduo}
-                                >
-                                  {residuo.nombreResiduo}
-                                </Select.Option>
-                              ))}
-                            </Select>
-                          </Form.Item>
-                          {/*Fecha*/}
-
-                          <Form.Item
-                            label="Fecha de Control"
-                            name="fechaControl"
-                            rules={[
-                              {
-                                required: true,
-                                message:
-                                  "Por favor ingresa la fecha de control",
-                              },
-                            ]}
-                          >
-                            <DatePicker />
-                          </Form.Item>
-                          {/*MetodoControl*/}
-                          <Form.Item
-                            label="MetodoControl"
-                            name="idMetodoControl"
-                            rules={[
-                              {
-                                required: true,
-                                message:
-                                  "Por favor selecciona el metodo de control",
-                              },
-                            ]}
-                          >
-                            <Select onChange={handleMetodoControlChange}>
-                              {metodosControl.map((metodo) => (
-                                <Select.Option
-                                  key={metodo.idMetodoControl}
-                                  value={metodo.idMetodoControl}
-                                >
-                                  {metodo.nombreMetodoControl}
-                                </Select.Option>
-                              ))}
-                            </Select>
-                          </Form.Item>
-                          {/* Descripción del Método de Control */}
-                          {selectedMetodoControl && (
-                            <Form.Item label="Descripción del Método de Control">
-                              <p>
-                                {
-                                  metodosControl.find(
-                                    (metodo) =>
-                                      metodo.idMetodoControl ===
-                                      selectedMetodoControl
-                                  )?.descripcionMetodoControl
-                                }
-                              </p>
-                            </Form.Item>
-                          )}
-                          {/*Observaciones*/}
-                          <Form.Item name="observaciones" label="Observaciones">
-                            <Input.TextArea style={{ height: "200px" }} />
-                          </Form.Item>
-                          <Form.Item>
-                            <Button
-                              type="primary"
-                              htmlType="submit"
-                              loading={loading}
-                              block
-                            >
-                              Registrar
-                            </Button>
-                          </Form.Item>
-                        </Form>
-                      </Modal>
-
                       <div className="flex justify-between mt-3">
                         <Button
                           onClick={() => handleEdit(control)}
@@ -482,6 +378,104 @@ export default function ControlCalidadPage() {
             )}
           </Row>
         </div>
+
+        <Modal
+          title="Crear Control de Calidad"
+          visible={isModalVisible}
+          onCancel={() => {
+            console.log("Closing create modal");
+            setIsModalVisible(false);
+          }}
+          footer={null}
+        >
+          <Form
+            name="createControlCalidad"
+            layout="vertical"
+            onFinish={onFinishCreate}
+            form={formInstance}
+          >
+            {/*Residuo*/}
+            <Form.Item
+              label="Residuo"
+              name="idResiduo"
+              rules={[
+                {
+                  required: true,
+                  message: "Por favor selecciona el estado el residuo",
+                },
+              ]}
+            >
+              <Select>
+                {residuos.map((residuo) => (
+                  <Select.Option
+                    key={residuo.idResiduo}
+                    value={residuo.idResiduo}
+                  >
+                    {residuo.nombreResiduo}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+            {/*Fecha*/}
+
+            <Form.Item
+              label="Fecha de Control"
+              name="fechaControl"
+              rules={[
+                {
+                  required: true,
+                  message: "Por favor ingresa la fecha de control",
+                },
+              ]}
+            >
+              <DatePicker />
+            </Form.Item>
+            {/*MetodoControl*/}
+            <Form.Item
+              label="MetodoControl"
+              name="idMetodoControl"
+              rules={[
+                {
+                  required: true,
+                  message: "Por favor selecciona el metodo de control",
+                },
+              ]}
+            >
+              <Select onChange={handleMetodoControlChange}>
+                {metodosControl.map((metodo) => (
+                  <Select.Option
+                    key={metodo.idMetodoControl}
+                    value={metodo.idMetodoControl}
+                  >
+                    {metodo.nombreMetodoControl}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+            {/* Descripción del Método de Control */}
+            {selectedMetodoControl && (
+              <Form.Item label="Descripción del Método de Control">
+                <p>
+                  {
+                    metodosControl.find(
+                      (metodo) =>
+                        metodo.idMetodoControl === selectedMetodoControl
+                    )?.descripcionMetodoControl
+                  }
+                </p>
+              </Form.Item>
+            )}
+            {/*Observaciones*/}
+            <Form.Item name="observaciones" label="Observaciones">
+              <Input.TextArea style={{ height: "200px" }} />
+            </Form.Item>
+            <Form.Item>
+              <Button type="primary" htmlType="submit" loading={loading} block>
+                Registrar
+              </Button>
+            </Form.Item>
+          </Form>
+        </Modal>
 
         {/* Modal para Modificar Control de Calidad */}
         <Modal

@@ -258,12 +258,7 @@ export default function RutaResiduoPage() {
   const handleCreate = () => {
     setCurrentRutaResiduo(null);
     form.resetFields();
-    setSelectedRutaResiduo(null); // Clear the selected method when creating
     setIsModalVisible(true);
-  };
-
-  const handleRutaResiduoChange = (value: string) => {
-    setSelectedRutaResiduo(value);
   };
 
   useEffect(() => {
@@ -388,259 +383,6 @@ export default function RutaResiduoPage() {
                         </span>
                       </p>
 
-                      {/* Modal para crear ruta de residuos*/}
-                      <Modal
-                        title="Crear Ruta de residuos"
-                        visible={isModalVisible}
-                        onCancel={() => setIsModalVisible(false)}
-                        footer={null}
-                      >
-                        <Form
-                          name="createRutaResiduo"
-                          layout="vertical"
-                          onFinish={onFinishCreate}
-                          form={formInstance}
-                        >
-                          {/*Residuo*/}
-                          <Form.Item
-                            label="Residuo"
-                            name="idResiduo"
-                            rules={[
-                              {
-                                required: true,
-                                message:
-                                  "Por favor selecciona el estado el residuo",
-                              },
-                            ]}
-                          >
-                            <Select>
-                              {residuos.map((residuo) => (
-                                <Select.Option
-                                  key={residuo.idResiduo}
-                                  value={residuo.idResiduo}
-                                >
-                                  {residuo.nombreResiduo}
-                                </Select.Option>
-                              ))}
-                            </Select>
-                          </Form.Item>
-
-                          {/*Fecha de recolección*/}
-
-                          <Form.Item
-                            label="Fecha de Recolección"
-                            name="fechaRecoleccion"
-                            rules={[
-                              {
-                                required: true,
-                                message:
-                                  "Por favor ingresa la fecha de Recoleccion",
-                              },
-                            ]}
-                          >
-                            <DatePicker />
-                          </Form.Item>
-                          {/*Punto de inicio*/}
-                          <Form.Item name="puntoInicio" label="Punto de inicio">
-                            <Input.TextArea style={{ height: "50px" }} />
-                          </Form.Item>
-                          {/*Punto de Finalizacion*/}
-                          <Form.Item
-                            name="puntoFinalizacion"
-                            label="Punto de Finalización"
-                          >
-                            <Input.TextArea style={{ height: "50px" }} />
-                          </Form.Item>
-
-                          {/*Estado de la ruta*/}
-                          <Form.Item
-                            label="EstadoRuta"
-                            name="idEstadoRuta"
-                            rules={[
-                              {
-                                required: true,
-                                message:
-                                  "Por favor selecciona el estado de la ruta",
-                              },
-                            ]}
-                          >
-                            <Select onChange={handleRutaResiduoChange}>
-                              {estadoRuta.map((estado) => (
-                                <Select.Option
-                                  key={estado.idEstadoRuta}
-                                  value={estado.idEstadoRuta}
-                                >
-                                  {estado.nombreEstadoRuta}
-                                </Select.Option>
-                              ))}
-                            </Select>
-                          </Form.Item>
-                          {/*Tipo Vehiculo*/}
-
-                          <Form.Item
-                            label="Tipo de Vehiculo"
-                            name="idVehiculo"
-                            rules={[
-                              {
-                                required: true,
-                                message:
-                                  "Por favor selecciona el tipo de vehiculo",
-                              },
-                            ]}
-                          >
-                            <Select onChange={handleRutaResiduoChange}>
-                              {vehiculo.map((veh) => (
-                                <Select.Option
-                                  key={veh.idVehiculo}
-                                  value={veh.tipoVehiculo.idTipoVehiculo}
-                                >
-                                  {veh.tipoVehiculo
-                                    ? veh.tipoVehiculo.nombreTipoVehiculo
-                                    : "Tipo de vehículo no especificado"}
-                                </Select.Option>
-                              ))}
-                            </Select>
-                          </Form.Item>
-                          <Form.Item>
-                            <Button
-                              type="primary"
-                              htmlType="submit"
-                              loading={loading}
-                              block
-                            >
-                              Registrar
-                            </Button>
-                          </Form.Item>
-                        </Form>
-                      </Modal>
-
-                      {/* Modal para actualizar ruta de residuos */}
-                      <Modal
-                        title="Actualizar Ruta de Residuos"
-                        visible={isUpdateModalVisible}
-                        onCancel={() => setIsUpdateModalVisible(false)}
-                        footer={null}
-                      >
-                        <Form
-                          name="updateRutaResiduo"
-                          layout="vertical"
-                          onFinish={onFinishUpdate}
-                          form={form}
-                        >
-                          {/* Residuo */}
-                          <Form.Item
-                            label="Residuo"
-                            name="idResiduo"
-                            rules={[
-                              {
-                                required: true,
-                                message: "Por favor selecciona el residuo",
-                              },
-                            ]}
-                          >
-                            <Select>
-                              {residuos.map((residuo) => (
-                                <Select.Option
-                                  key={residuo.idResiduo}
-                                  value={residuo.idResiduo}
-                                >
-                                  {residuo.nombreResiduo}
-                                </Select.Option>
-                              ))}
-                            </Select>
-                          </Form.Item>
-
-                          {/* Fecha de recolección */}
-                          <Form.Item
-                            label="Fecha de Recolección"
-                            name="fechaRecoleccion"
-                            rules={[
-                              {
-                                required: true,
-                                message:
-                                  "Por favor ingresa la fecha de recolección",
-                              },
-                            ]}
-                          >
-                            <DatePicker />
-                          </Form.Item>
-
-                          {/* Punto de inicio */}
-                          <Form.Item name="puntoInicio" label="Punto de Inicio">
-                            <Input.TextArea style={{ height: "50px" }} />
-                          </Form.Item>
-
-                          {/* Punto de Finalización */}
-                          <Form.Item
-                            name="puntoFinalizacion"
-                            label="Punto de Finalización"
-                          >
-                            <Input.TextArea style={{ height: "50px" }} />
-                          </Form.Item>
-
-                          {/* Estado de la ruta */}
-                          <Form.Item
-                            label="Estado de la Ruta"
-                            name="idEstadoRuta"
-                            rules={[
-                              {
-                                required: true,
-                                message:
-                                  "Por favor selecciona el estado de la ruta",
-                              },
-                            ]}
-                          >
-                            <Select>
-                              {estadoRuta.map((estado) => (
-                                <Select.Option
-                                  key={estado.idEstadoRuta}
-                                  value={estado.idEstadoRuta}
-                                >
-                                  {estado.nombreEstadoRuta}
-                                </Select.Option>
-                              ))}
-                            </Select>
-                          </Form.Item>
-
-                          {/* Tipo de Vehículo */}
-                          <Form.Item
-                            label="Tipo de Vehículo"
-                            name="idVehiculo"
-                            rules={[
-                              {
-                                required: true,
-                                message:
-                                  "Por favor selecciona el tipo de vehículo",
-                              },
-                            ]}
-                          >
-                            <Select>
-                              {vehiculo.map((veh) => (
-                                <Select.Option
-                                  key={veh.idVehiculo}
-                                  value={veh.idVehiculo}
-                                >
-                                  {veh.tipoVehiculo
-                                    ? veh.tipoVehiculo.nombreTipoVehiculo
-                                    : "Tipo de vehículo no especificado"}
-                                </Select.Option>
-                              ))}
-                            </Select>
-                          </Form.Item>
-
-                          <Form.Item>
-                            <Button
-                              type="primary"
-                              htmlType="submit"
-                              loading={loading}
-                              block
-                            >
-                              Actualizar
-                            </Button>
-                          </Form.Item>
-                        </Form>
-                      </Modal>
-
                       <div className="flex justify-between mt-3">
                         <Button
                           onClick={() => handleEdit(ruta)}
@@ -680,6 +422,242 @@ export default function RutaResiduoPage() {
             )}
           </Row>
         </div>
+        {/* Modal para crear ruta de residuos*/}
+        <Modal
+          title="Crear Ruta de residuos"
+          visible={isModalVisible}
+          onCancel={() => setIsModalVisible(false)}
+          footer={null}
+        >
+          <Form
+            name="createRutaResiduo"
+            layout="vertical"
+            onFinish={onFinishCreate}
+            form={formInstance}
+          >
+            {/*Residuo*/}
+            <Form.Item
+              label="Residuo"
+              name="idResiduo"
+              rules={[
+                {
+                  required: true,
+                  message: "Por favor selecciona el estado el residuo",
+                },
+              ]}
+            >
+              <Select>
+                {residuos.map((residuo) => (
+                  <Select.Option
+                    key={residuo.idResiduo}
+                    value={residuo.idResiduo}
+                  >
+                    {residuo.nombreResiduo}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            {/*Fecha de recolección*/}
+
+            <Form.Item
+              label="Fecha de Recolección"
+              name="fechaRecoleccion"
+              rules={[
+                {
+                  required: true,
+                  message: "Por favor ingresa la fecha de Recoleccion",
+                },
+              ]}
+            >
+              <DatePicker />
+            </Form.Item>
+            {/*Punto de inicio*/}
+            <Form.Item name="puntoInicio" label="Punto de inicio">
+              <Input.TextArea style={{ height: "50px" }} />
+            </Form.Item>
+            {/*Punto de Finalizacion*/}
+            <Form.Item name="puntoFinalizacion" label="Punto de Finalización">
+              <Input.TextArea style={{ height: "50px" }} />
+            </Form.Item>
+
+            {/*Estado de la ruta*/}
+            <Form.Item
+              label="EstadoRuta"
+              name="idEstadoRuta"
+              rules={[
+                {
+                  required: true,
+                  message: "Por favor selecciona el estado de la ruta",
+                },
+              ]}
+            >
+              <Select>
+                {estadoRuta.map((estado) => (
+                  <Select.Option
+                    key={estado.idEstadoRuta}
+                    value={estado.idEstadoRuta}
+                  >
+                    {estado.nombreEstadoRuta}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+            {/*Tipo Vehiculo*/}
+
+            <Form.Item
+              label="Tipo de Vehiculo"
+              name="idVehiculo"
+              rules={[
+                {
+                  required: true,
+                  message: "Por favor selecciona el tipo de vehiculo",
+                },
+              ]}
+            >
+              <Select>
+                {vehiculo.map((veh) => (
+                  <Select.Option
+                    key={veh.idVehiculo}
+                    value={veh.tipoVehiculo.idTipoVehiculo}
+                  >
+                    {veh.tipoVehiculo
+                      ? veh.tipoVehiculo.nombreTipoVehiculo
+                      : "Tipo de vehículo no especificado"}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item>
+              <Button type="primary" htmlType="submit" loading={loading} block>
+                Registrar
+              </Button>
+            </Form.Item>
+          </Form>
+        </Modal>
+
+        {/* Modal para actualizar ruta de residuos */}
+        <Modal
+          title="Actualizar Ruta de Residuos"
+          visible={isUpdateModalVisible}
+          onCancel={() => setIsUpdateModalVisible(false)}
+          footer={null}
+        >
+          <Form
+            name="updateRutaResiduo"
+            layout="vertical"
+            onFinish={onFinishUpdate}
+            form={form}
+            initialValues={
+              currentRutaResiduo
+                ? {
+                    ...currentRutaResiduo,
+                    fechaRecoleccion: currentRutaResiduo.fechaRecoleccion
+                      ? moment(currentRutaResiduo.fechaRecoleccion)
+                      : null,
+                  }
+                : {}
+            }
+          >
+            {/* Residuo */}
+            <Form.Item
+              label="Residuo"
+              name="idResiduo"
+              rules={[
+                {
+                  required: true,
+                  message: "Por favor selecciona el residuo",
+                },
+              ]}
+            >
+              <Select>
+                {residuos.map((residuo) => (
+                  <Select.Option
+                    key={residuo.idResiduo}
+                    value={residuo.idResiduo}
+                  >
+                    {residuo.nombreResiduo}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            {/* Fecha de recolección */}
+            <Form.Item
+              label="Fecha de Recolección"
+              name="fechaRecoleccion"
+              rules={[
+                {
+                  required: true,
+                  message: "Por favor ingresa la fecha de recolección",
+                },
+              ]}
+            >
+              <DatePicker />
+            </Form.Item>
+
+            {/* Punto de inicio */}
+            <Form.Item name="puntoInicio" label="Punto de Inicio">
+              <Input.TextArea style={{ height: "50px" }} />
+            </Form.Item>
+
+            {/* Punto de Finalización */}
+            <Form.Item name="puntoFinalizacion" label="Punto de Finalización">
+              <Input.TextArea style={{ height: "50px" }} />
+            </Form.Item>
+
+            {/* Estado de la ruta */}
+            <Form.Item
+              label="Estado de la Ruta"
+              name="idEstadoRuta"
+              rules={[
+                {
+                  required: true,
+                  message: "Por favor selecciona el estado de la ruta",
+                },
+              ]}
+            >
+              <Select>
+                {estadoRuta.map((estado) => (
+                  <Select.Option
+                    key={estado.idEstadoRuta}
+                    value={estado.idEstadoRuta}
+                  >
+                    {estado.nombreEstadoRuta}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            {/* Tipo de Vehículo */}
+            <Form.Item
+              label="Tipo de Vehículo"
+              name="idVehiculo"
+              rules={[
+                {
+                  required: true,
+                  message: "Por favor selecciona el tipo de vehículo",
+                },
+              ]}
+            >
+              <Select>
+                {vehiculo.map((veh) => (
+                  <Select.Option key={veh.idVehiculo} value={veh.idVehiculo}>
+                    {veh.tipoVehiculo
+                      ? veh.tipoVehiculo.nombreTipoVehiculo
+                      : "Tipo de vehículo no especificado"}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item>
+              <Button type="primary" htmlType="submit" loading={loading} block>
+                Actualizar
+              </Button>
+            </Form.Item>
+          </Form>
+        </Modal>
       </div>
     </div>
   );
