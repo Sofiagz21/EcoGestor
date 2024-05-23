@@ -88,9 +88,9 @@ export default function RutaResiduoPage() {
 
   const getRutasRecolecta = async (idUsuario: number) => {
     try {
-      const res = await axiosInstance.get("/api/RutaRecoleta");
+      const res = await axiosInstance.get("/api/RutaRecolecta");
       if (res.status === 200) {
-      console.log("coleta "+res.data);
+        console.log("coleta " + res.data);
         const filteredData = res.data.filter(
           (ruta: any) => ruta.idUsuario === idUsuario
         );
@@ -107,7 +107,7 @@ export default function RutaResiduoPage() {
 
   const createRutaResiduo = async (form: FormData) => {
     try {
-      const res = await axiosInstance.post("/api/RutaRecoleta", form);
+      const res = await axiosInstance.post("/api/RutaRecolecta", form);
       if (res.status === 201) {
         message.success("Ruta de residuos creada exitosamente");
         getRutasRecolecta(usuario.idUsuario);
@@ -125,7 +125,7 @@ export default function RutaResiduoPage() {
 
   const updateRutaResiduo = async (form: FormData) => {
     try {
-      const res = await axiosInstance.put(`/api/RutaRecoleta/`, form);
+      const res = await axiosInstance.put(`/api/RutaRecolecta/`, form);
       if (res.status === 200) {
         message.success("Control de calidad actualizado exitosamente");
         await getRutasRecolecta(usuario.idUsuario);
@@ -142,10 +142,10 @@ export default function RutaResiduoPage() {
     }
   };
 
-  const handleDelete = async (idControlCalidad: number) => {
+  const handleDelete = async (idRutaRecolecta: number) => {
     try {
       const res = await axiosInstance.delete(
-        `/api/ControlCalidad/${idControlCalidad}`
+        `/api/RutaRecolecta/${idRutaRecolecta}`
       );
       if (res.status === 200) {
         message.success("Ruta de residuos eliminada correctamente");
@@ -169,15 +169,15 @@ export default function RutaResiduoPage() {
       usuario.idUsuario ? usuario.idUsuario.toString() : ""
     );
 
-    form.append("PuntoInicio", values.PuntoInicio);
-    form.append("PuntoFin", values.PuntoFin);
-    form.append("IdResiduo", values.IdResiduo);
+    form.append("PuntoInicio", values.puntoInicio);
+    form.append("PuntoFinalizacion", values.puntoFinalizacion);
+    form.append("IdResiduo", values.idResiduo);
     form.append("IdEstadoRuta", values.idEstadoRuta);
-    form.append("IdVehiculo", values.IdVehiculo);
+    form.append("IdVehiculo", values.idVehiculo);
 
     const fechaRecoleccion = values.fechaRecoleccion;
     if (moment(fechaRecoleccion).isValid()) {
-      form.append("FechaControl", fechaRecoleccion.format("YYYY-MM-DD"));
+      form.append("FechaRecoleccion", fechaRecoleccion.format("YYYY-MM-DD"));
     } else {
       console.error("Fecha de registro no válida");
       setLoading(false);
@@ -205,15 +205,15 @@ export default function RutaResiduoPage() {
       usuario.idUsuario ? usuario.idUsuario.toString() : ""
     );
 
-    form.append("PuntoInicio", values.PuntoInicio);
-    form.append("PuntoFinal", values.PuntoFinal);
-    form.append("IdResiduo", values.IdResiduo);
+    form.append("PuntoInicio", values.puntoInicio);
+    form.append("PuntoFinalizacion", values.puntoFinalizacion);
+    form.append("IdResiduo", values.idResiduo);
     form.append("IdEstadoRuta", values.idEstadoRuta);
-    form.append("IdVehiculo", values.IdVehiculo);
+    form.append("IdVehiculo", values.idVehiculo);
 
     const fechaRecoleccion = values.fechaRecoleccion;
     if (moment(fechaRecoleccion).isValid()) {
-      form.append("FechaControl", fechaRecoleccion.format("YYYY-MM-DD"));
+      form.append("FechaRecoleccion", fechaRecoleccion.format("YYYY-MM-DD"));
     } else {
       console.error("Fecha de registro no válida");
       setLoading(false);
@@ -221,15 +221,15 @@ export default function RutaResiduoPage() {
     }
 
     try {
-      if (currentRutaResiduo.idRutaResiduo) {
+      if (currentRutaResiduo.idRutaRecolecta) {
         form.append(
-          "IdRutaResiduo",
-          currentRutaResiduo.idRutaResiduo.toString()
+          "IdRutaRecolecta",
+          currentRutaResiduo.idRutaRecolecta.toString()
         );
       } else {
         console.error(
-          "currentRutaResiduo.idRutaResiduo es inválido:",
-          currentRutaResiduo.idResiduo
+          "currentRutaRecolecta.idRutaRecolecta es inválido:",
+          currentRutaResiduo.idRutaRecolecta
         );
         setLoading(false);
         return;
@@ -282,170 +282,405 @@ export default function RutaResiduoPage() {
 
   // (Código de importación y hooks iniciales no mostrado para brevedad)
 
-return (
-  <div className="flex items-center overflow-y-auto">
-    <div className="p-3 h-screen box-border">
-      <h2 className="text-green text-3xl lg:text-3xl font-extrabold p-3">
-        {usuario ? (
-          "🚜 Gestión de Rutas de Recolección de Residuos"
-        ) : (
-          <Skeleton.Input block active />
-        )}
-      </h2>
-      <div className="mt-4 text-gray text-sm lg:text-base">
-        {usuario && (
-          <>
-            Registra y gestiona las rutas de recolección de residuos de tu
-            finca. Con esta información, optimizaremos la logística de
-            recolección, contribuyendo a un entorno más limpio y sostenible.
-            Recuerda, cada acción cuenta para un futuro más verde.
-            <p className="mt-2 text-green">
-              <b>
-                Puedes editar o agregar más rutas de calidad en cualquier
-                momento.
-              </b>
-            </p>
-          </>
-        )}
-      </div>
-      <Button type="primary" onClick={handleCreate} className="mt-4 ml-auto">
-        <FontAwesomeIcon icon={faPlus} className="mr-2" /> Agregar Ruta de Residuo
-      </Button>
-      <div
-        className="mt-8 overflow-auto"
-        style={{ width: "100%", height: "100%" }}
-      >
-        <Row gutter={[16, 16]}>
-          {rutasResiduo.length > 0 ? (
-            rutasResiduo
-              .filter((ruta) => ruta.idUsuario === usuario.idUsuario)
-              .map((ruta) => (
-                <Col xs={24} sm={12} md={8} lg={12} key={ruta.idResiduo}>
-                  <Card
-                    title={
-                      <span style={{ color: "green" }}>
-                        Ruta de recolección:{" "}
-                        <p>
+  return (
+    <div className="flex items-center overflow-y-auto">
+      <div className="p-3 h-screen box-border">
+        <h2 className="text-green text-3xl lg:text-3xl font-extrabold p-3">
+          {usuario ? (
+            "🚜 Gestión de Rutas de Recolección de Residuos"
+          ) : (
+            <Skeleton.Input block active />
+          )}
+        </h2>
+        <div className="mt-4 text-gray text-sm lg:text-base">
+          {usuario && (
+            <>
+              Registra y gestiona las rutas de recolección de residuos de tu
+              finca. Con esta información, optimizaremos la logística de
+              recolección, contribuyendo a un entorno más limpio y sostenible.
+              Recuerda, cada acción cuenta para un futuro más verde.
+              <p className="mt-2 text-green">
+                <b>
+                  Puedes editar o agregar más rutas de calidad en cualquier
+                  momento.
+                </b>
+              </p>
+            </>
+          )}
+        </div>
+        <Button type="primary" onClick={handleCreate} className="mt-4 ml-auto">
+          <FontAwesomeIcon icon={faPlus} className="mr-2" /> Agregar Ruta de
+          Residuo
+        </Button>
+        <div
+          className="mt-8 overflow-auto"
+          style={{ width: "100%", height: "100%" }}
+        >
+          <Row gutter={[16, 16]}>
+            {rutasResiduo.length > 0 ? (
+              rutasResiduo
+                .filter((ruta) => ruta.idUsuario === usuario.idUsuario)
+                .map((ruta) => (
+                  <Col xs={24} sm={12} md={8} lg={12} key={ruta.idResiduo}>
+                    <Card
+                      title={
+                        <span style={{ color: "green" }}>
+                          Ruta de recolección:{" "}
+                          <p>
+                            {ruta.residuos
+                              ? ruta.residuos.nombreResiduo
+                              : "No se ha asignado un nombre"}
+                          </p>
+                        </span>
+                      }
+                      bordered={true}
+                      style={{ borderColor: "#8AC942" }}
+                    >
+                      <p style={{ color: "green" }}>
+                        <strong>🌱 Residuo:</strong>{" "}
+                        <span style={{ color: "#000" }}>
                           {ruta.residuos
                             ? ruta.residuos.nombreResiduo
                             : "No se ha asignado un nombre"}
-                        </p>
-                      </span>
-                    }
-                    bordered={true}
-                    style={{ borderColor: "#8AC942" }}
-                  >
-                    <p style={{ color: "green" }}>
-                      <strong>🌱 Residuo:</strong>{" "}
-                      <span style={{ color: "#000" }}>
-                        {ruta.residuos
-                          ? ruta.residuos.nombreResiduo
-                          : "No se ha asignado un nombre"}
-                      </span>
-                    </p>
-                    <p style={{ color: "green" }}>
-                      <strong>📅 Fecha de Recolección:</strong>{" "}
-                      <span style={{ color: "#000" }}>
-                        {ruta.fechaRecoleccion}
-                      </span>
-                    </p>
-                    <p style={{ color: "green" }}>
-                      <strong>🟢 Punto de Inicio:</strong>{" "}
-                      <span style={{ color: "#000" }}>
-                        {ruta.puntoInicio}
-                      </span>
-                    </p>
-                    <p style={{ color: "green" }}>
-                      <strong>🔴 Punto de Finalización:</strong>{" "}
-                      <span style={{ color: "#000" }}>
-                        {ruta.puntoFinalizacion}
-                      </span>
-                    </p>
-                    <p style={{ color: "green" }}>
-                      <strong>👁️ Estado de la ruta:</strong>{" "}
-                      <span style={{ color: "#000" }}>
-                        {ruta.estadoRuta
-                          ? ruta.estadoRuta.nombreEstadoRuta
-                          : "No se ha asignado un nombre"}
-                      </span>
-                    </p>
-                    <p style={{ color: "green" }}>
-                      <strong>🚜 Placa Vehículo:</strong>{" "}
-                      <span style={{ color: "#000" }}>
-                        {ruta.vehiculo
-                          ? ruta.vehiculo.placaVehiculo
-                          : "No se ha asignado un nombre"}
-                      </span>
-                    </p>
-                    <p style={{ color: "green" }}>
-                      <strong>🆎 Tipo Vehículo:</strong>{" "}
-                      <span style={{ color: "#000" }}>
-                        {ruta.vehiculo && ruta.vehiculo.tipoVehiculo.nombreTipoVehiculo
-                          ? ruta.vehiculo.tipoVehiculo.nombreTipoVehiculo
-                          : "No se ha asignado un nombre"}
-                      </span>
-                    </p>
-                    
+                        </span>
+                      </p>
+                      <p style={{ color: "green" }}>
+                        <strong>📅 Fecha de Recolección:</strong>{" "}
+                        <span style={{ color: "#000" }}>
+                          {ruta.fechaRecoleccion}
+                        </span>
+                      </p>
+                      <p style={{ color: "green" }}>
+                        <strong>🟢 Punto de Inicio:</strong>{" "}
+                        <span style={{ color: "#000" }}>
+                          {ruta.puntoInicio}
+                        </span>
+                      </p>
+                      <p style={{ color: "green" }}>
+                        <strong>🔴 Punto de Finalización:</strong>{" "}
+                        <span style={{ color: "#000" }}>
+                          {ruta.puntoFinalizacion}
+                        </span>
+                      </p>
+                      <p style={{ color: "green" }}>
+                        <strong>👁️ Estado de la ruta:</strong>{" "}
+                        <span style={{ color: "#000" }}>
+                          {ruta.estadoRuta
+                            ? ruta.estadoRuta.nombreEstadoRuta
+                            : "No se ha asignado un nombre"}
+                        </span>
+                      </p>
+                      <p style={{ color: "green" }}>
+                        <strong>🚜 Placa Vehículo:</strong>{" "}
+                        <span style={{ color: "#000" }}>
+                          {ruta.vehiculo
+                            ? ruta.vehiculo.placaVehiculo
+                            : "No se ha asignado un nombre"}
+                        </span>
+                      </p>
+                      <p style={{ color: "green" }}>
+                        <strong>🆎 Tipo Vehículo:</strong>{" "}
+                        <span style={{ color: "#000" }}>
+                          {ruta.vehiculo &&
+                          ruta.vehiculo.tipoVehiculo.nombreTipoVehiculo
+                            ? ruta.vehiculo.tipoVehiculo.nombreTipoVehiculo
+                            : "No se ha asignado un nombre"}
+                        </span>
+                      </p>
+
                       {/* Modal para crear ruta de residuos*/}
-                      
-                      {/* Modal para actualizar ruta de residuos*/}
-                      
-                      
-                      
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    <div className="flex justify-between mt-3">
-                      <Button
-                        onClick={() => handleEdit(ruta)}
-                        style={{
-                          backgroundColor: "#8AC942",
-                          borderColor: "#8AC942",
-                          color: "white",
-                        }}
+                      <Modal
+                        title="Crear Ruta de residuos"
+                        visible={isModalVisible}
+                        onCancel={() => setIsModalVisible(false)}
+                        footer={null}
                       >
-                        <FontAwesomeIcon icon={faEdit} className="mr-2" />
-                        Modificar
-                      </Button>
-                      <Popconfirm
-                        title="¿Estás seguro de eliminar este residuo?"
-                        onConfirm={() => handleDelete(ruta.idRutaResiduo)}
-                        okText="Sí"
-                        cancelText="Cancelar"
+                        <Form
+                          name="createRutaResiduo"
+                          layout="vertical"
+                          onFinish={onFinishCreate}
+                          form={formInstance}
+                        >
+                          {/*Residuo*/}
+                          <Form.Item
+                            label="Residuo"
+                            name="idResiduo"
+                            rules={[
+                              {
+                                required: true,
+                                message:
+                                  "Por favor selecciona el estado el residuo",
+                              },
+                            ]}
+                          >
+                            <Select>
+                              {residuos.map((residuo) => (
+                                <Select.Option
+                                  key={residuo.idResiduo}
+                                  value={residuo.idResiduo}
+                                >
+                                  {residuo.nombreResiduo}
+                                </Select.Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+
+                          {/*Fecha de recolección*/}
+
+                          <Form.Item
+                            label="Fecha de Recolección"
+                            name="fechaRecoleccion"
+                            rules={[
+                              {
+                                required: true,
+                                message:
+                                  "Por favor ingresa la fecha de Recoleccion",
+                              },
+                            ]}
+                          >
+                            <DatePicker />
+                          </Form.Item>
+                          {/*Punto de inicio*/}
+                          <Form.Item name="puntoInicio" label="Punto de inicio">
+                            <Input.TextArea style={{ height: "50px" }} />
+                          </Form.Item>
+                          {/*Punto de Finalizacion*/}
+                          <Form.Item
+                            name="puntoFinalizacion"
+                            label="Punto de Finalización"
+                          >
+                            <Input.TextArea style={{ height: "50px" }} />
+                          </Form.Item>
+
+                          {/*Estado de la ruta*/}
+                          <Form.Item
+                            label="EstadoRuta"
+                            name="idEstadoRuta"
+                            rules={[
+                              {
+                                required: true,
+                                message:
+                                  "Por favor selecciona el estado de la ruta",
+                              },
+                            ]}
+                          >
+                            <Select onChange={handleRutaResiduoChange}>
+                              {estadoRuta.map((estado) => (
+                                <Select.Option
+                                  key={estado.idEstadoRuta}
+                                  value={estado.idEstadoRuta}
+                                >
+                                  {estado.nombreEstadoRuta}
+                                </Select.Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                          {/*Tipo Vehiculo*/}
+
+                          <Form.Item
+                            label="Tipo de Vehiculo"
+                            name="idVehiculo"
+                            rules={[
+                              {
+                                required: true,
+                                message:
+                                  "Por favor selecciona el tipo de vehiculo",
+                              },
+                            ]}
+                          >
+                            <Select onChange={handleRutaResiduoChange}>
+                              {vehiculo.map((veh) => (
+                                <Select.Option
+                                  key={veh.idVehiculo}
+                                  value={veh.tipoVehiculo.idTipoVehiculo}
+                                >
+                                  {veh.tipoVehiculo
+                                    ? veh.tipoVehiculo.nombreTipoVehiculo
+                                    : "Tipo de vehículo no especificado"}
+                                </Select.Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                          <Form.Item>
+                            <Button
+                              type="primary"
+                              htmlType="submit"
+                              loading={loading}
+                              block
+                            >
+                              Registrar
+                            </Button>
+                          </Form.Item>
+                        </Form>
+                      </Modal>
+
+                      {/* Modal para actualizar ruta de residuos */}
+                      <Modal
+                        title="Actualizar Ruta de Residuos"
+                        visible={isUpdateModalVisible}
+                        onCancel={() => setIsUpdateModalVisible(false)}
+                        footer={null}
                       >
+                        <Form
+                          name="updateRutaResiduo"
+                          layout="vertical"
+                          onFinish={onFinishUpdate}
+                          form={form}
+                        >
+                          {/* Residuo */}
+                          <Form.Item
+                            label="Residuo"
+                            name="idResiduo"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Por favor selecciona el residuo",
+                              },
+                            ]}
+                          >
+                            <Select>
+                              {residuos.map((residuo) => (
+                                <Select.Option
+                                  key={residuo.idResiduo}
+                                  value={residuo.idResiduo}
+                                >
+                                  {residuo.nombreResiduo}
+                                </Select.Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+
+                          {/* Fecha de recolección */}
+                          <Form.Item
+                            label="Fecha de Recolección"
+                            name="fechaRecoleccion"
+                            rules={[
+                              {
+                                required: true,
+                                message:
+                                  "Por favor ingresa la fecha de recolección",
+                              },
+                            ]}
+                          >
+                            <DatePicker />
+                          </Form.Item>
+
+                          {/* Punto de inicio */}
+                          <Form.Item name="puntoInicio" label="Punto de Inicio">
+                            <Input.TextArea style={{ height: "50px" }} />
+                          </Form.Item>
+
+                          {/* Punto de Finalización */}
+                          <Form.Item
+                            name="puntoFinalizacion"
+                            label="Punto de Finalización"
+                          >
+                            <Input.TextArea style={{ height: "50px" }} />
+                          </Form.Item>
+
+                          {/* Estado de la ruta */}
+                          <Form.Item
+                            label="Estado de la Ruta"
+                            name="idEstadoRuta"
+                            rules={[
+                              {
+                                required: true,
+                                message:
+                                  "Por favor selecciona el estado de la ruta",
+                              },
+                            ]}
+                          >
+                            <Select>
+                              {estadoRuta.map((estado) => (
+                                <Select.Option
+                                  key={estado.idEstadoRuta}
+                                  value={estado.idEstadoRuta}
+                                >
+                                  {estado.nombreEstadoRuta}
+                                </Select.Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+
+                          {/* Tipo de Vehículo */}
+                          <Form.Item
+                            label="Tipo de Vehículo"
+                            name="idVehiculo"
+                            rules={[
+                              {
+                                required: true,
+                                message:
+                                  "Por favor selecciona el tipo de vehículo",
+                              },
+                            ]}
+                          >
+                            <Select>
+                              {vehiculo.map((veh) => (
+                                <Select.Option
+                                  key={veh.idVehiculo}
+                                  value={veh.idVehiculo}
+                                >
+                                  {veh.tipoVehiculo
+                                    ? veh.tipoVehiculo.nombreTipoVehiculo
+                                    : "Tipo de vehículo no especificado"}
+                                </Select.Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+
+                          <Form.Item>
+                            <Button
+                              type="primary"
+                              htmlType="submit"
+                              loading={loading}
+                              block
+                            >
+                              Actualizar
+                            </Button>
+                          </Form.Item>
+                        </Form>
+                      </Modal>
+
+                      <div className="flex justify-between mt-3">
                         <Button
-                          danger
+                          onClick={() => handleEdit(ruta)}
                           style={{
-                            backgroundColor: "#FA6464",
-                            borderColor: "#FA6464",
+                            backgroundColor: "#8AC942",
+                            borderColor: "#8AC942",
                             color: "white",
                           }}
                         >
-                          <FontAwesomeIcon icon={faTrash} className="mr-2" />
-                          Eliminar
+                          <FontAwesomeIcon icon={faEdit} className="mr-2" />
+                          Modificar
                         </Button>
-                      </Popconfirm>
-                    </div>
-                  </Card>
-                </Col>
-              ))
-          ) : (
-            <p>No hay Rutas de Recolecta.</p>
-          )}
-        </Row>
+                        <Popconfirm
+                          title="¿Estás seguro de eliminar este residuo?"
+                          onConfirm={() => handleDelete(ruta.idRutaRecolecta)}
+                          okText="Sí"
+                          cancelText="Cancelar"
+                        >
+                          <Button
+                            danger
+                            style={{
+                              backgroundColor: "#FA6464",
+                              borderColor: "#FA6464",
+                              color: "white",
+                            }}
+                          >
+                            <FontAwesomeIcon icon={faTrash} className="mr-2" />
+                            Eliminar
+                          </Button>
+                        </Popconfirm>
+                      </div>
+                    </Card>
+                  </Col>
+                ))
+            ) : (
+              <p>No hay Rutas de Recolecta.</p>
+            )}
+          </Row>
+        </div>
       </div>
     </div>
-  </div>
-);
-
+  );
 }

@@ -1,9 +1,10 @@
 interface RutaRecolecta{
     puntoInicio: string,
-    puntoFin: string,
+    puntoFinalizacion: string,
     idEstadoRuta?: number,
     idVehiculo?: number,
-    fechaRecoleccion?: Date,
+    idResiduo?: number,
+    fechaRecoleccion: Date,
 
 }
 
@@ -12,5 +13,6 @@ interface RutaRecolectaResponse extends RutaRecolecta{
     idRutaRecolecta: number,
     usuario: UsuarioResponse,
     estadoRuta?: EstadoRuta,
+    residuo?: ResiduoResponse,
     vehiculo?: VehiculoResponse, 
 }

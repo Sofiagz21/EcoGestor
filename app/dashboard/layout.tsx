@@ -37,13 +37,7 @@ export default function DashboardLayout(props: {
       icon: <GiPencil size="25" fill="#162504" className="mb-2" />,
       title: "Control de Calidad",
       url: "/controlCalidad",
-    },
-    {
-      key: "4",
-      icon: <TbSettingsFilled size="25" fill="#162504" className="" />,
-      title: "Configuración",
-      url: "/settings",
-    },
+    }
   ];
 
   const handleToggleSidebar = () => {
